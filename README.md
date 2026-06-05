@@ -1,9 +1,8 @@
 <div align="center">
-    <img src="https://frappecloud.com/files/pos.png" height="128">
-    <h2>POS AWESOME</h2>
+    <h2>HIGHSPEED POS</h2>
 </div>
 
-#### An open-source Point of Sale for [Erpnext](https://github.com/frappe/erpnext) using [Vue.js](https://github.com/vuejs/vue) and [Vuetify](https://github.com/vuetifyjs/vuetify) (VERSION 15 Support)
+#### A Point of Sale and Kitchen Display System (KDS) for [Erpnext](https://github.com/frappe/erpnext) using [Vue.js](https://github.com/vuejs/vue) and [Vuetify](https://github.com/vuetifyjs/vuetify) (VERSION 15 Support)
 
 ---
 ### Update Instructions
@@ -62,7 +61,7 @@ After switching branches or pulling latest changes:
 
 #### Self Hosting:
 
-1. `bench get-app https://github.com/MahmoudAbdElHamidHaggag/POS-Awesome.git`
+1. `bench get-app https://github.com/fuhaed/highspeed_pos.git`
 2. `bench setup requirements`
 3. `bench build --app highspeed_pos`
 4. `bench restart`
@@ -73,7 +72,7 @@ After switching branches or pulling latest changes:
 
 ### How To Use:
 
-[HIGHSPEED POS Wiki](https://github.com/yrestom/POS-Awesome/wiki)
+[HIGHSPEED POS Wiki](https://github.com/fuhaed/highspeed_pos/wiki)
 
 ---
 
@@ -105,6 +104,6 @@ After switching branches or pulling latest changes:
 
 ### License
 
-GNU/General Public License (see [license.txt](https://github.com/yrestom/POS-Awesome/blob/master/license.txt))
+GNU/General Public License (see [license.txt](https://github.com/fuhaed/highspeed_pos/blob/main/license.txt))
 
 The HIGHSPEED POS code is licensed as GNU General Public License (v3)
