@@ -1,0 +1,18 @@
+include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+recursive-include highspeed_pos *.css
+recursive-include highspeed_pos *.csv
+recursive-include highspeed_pos *.html
+recursive-include highspeed_pos *.ico
+recursive-include highspeed_pos *.js
+recursive-include highspeed_pos *.json
+recursive-include highspeed_pos *.md
+recursive-include highspeed_pos *.png
+recursive-include highspeed_pos *.py
+recursive-include highspeed_pos *.svg
+recursive-include highspeed_pos *.txt
+recursive-exclude highspeed_pos *.pyc

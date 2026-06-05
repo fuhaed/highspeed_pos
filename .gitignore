@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.pdb
+*.egg-info/
+dist/
+build/
+*.egg
+*.whl
+
+# Virtualenv / env
+venv/
+env/
+.env
+.env.* 
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+
+# Logs
+*.log
+*.sqlite3
+
+# Frappe / bench build
+sites/*/private/backups/
+sites/*/public/files/
+sites/*/private/files/
+sites/*/logs/
+apps/*/node_modules/
+apps/*/dist/
+apps/*/build/
