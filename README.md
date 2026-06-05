@@ -56,6 +56,40 @@ After switching branches or pulling latest changes:
 32. Payments Reconciliation
 33. A lot more bug fixes from the version 14
 34. Offline invoices that fail to submit are saved as draft documents
+35. **Standalone Kitchen Display System (KDS)**: Real-time, dark-themed screen for kitchen staff to track and prepare orders.
+36. **Dynamic & Compact KDS Cards**: Layout adjusts height automatically based on the number of products to show all items without browser scrollbars.
+37. **Touchscreen-Friendly Toggles**: Circular tap buttons on checklist rows with large tap target cells tailored for tablet devices.
+38. **Instant Language & Direction Switcher**: Quick toggle button between Arabic and English that automatically adjusts text layout direction (RTL / LTR).
+39. **Distinct Order Types & Numbers**: Prominent order numbers and color-coded badges for Dine-in (محلي), Takeaway (سفري), and Delivery (توصيل).
+40. **Linked & Unlinked Addons Support**: Renders child additions and textual modifiers clearly below the parent items.
+41. **Web Audio Chime Alerts**: Synthetic dual-tone audio notifications on new order entries to alert kitchen staff.
+42. **Direct KOT Thermal Printing**: Silent, popup-safe kitchen ticket printing using a hidden iframe.
+
+---
+
+### 🍳 Standalone Kitchen Display System (KDS) & Restaurant Enhancements
+### 🍳 شاشة عرض المطبخ وإضافات المطاعم الجديدة
+
+We have integrated a comprehensive, real-time Kitchen Display System (KDS) tailored for touchscreen restaurant environments:
+لقد قمنا بدمج شاشة عرض مطبخ (KDS) متكاملة وتفاعلية مخصصة للعمل على الأجهزة اللوحية وشاشات اللمس في المطاعم:
+
+*   **Standalone KDS Dashboard | شاشة المطبخ المستقلة**: A beautiful, dark-themed dashboard `/app/hspos_kitchen` for kitchen staff to track order preparation in real-time.
+    *   شاشة مستقلة بالكامل وجذابة باللون الداكن `/app/hspos_kitchen` تتيح لطاقم المطبخ متابعة وتحديث الطلبات لحظة بلحظة.
+*   **Distinct Order Types & Prominent Numbers | نوع الطلب وأرقام مميزة**: Display of large order numbers alongside color-coded high-contrast badges for Dine-in (محلي - blue), Takeaway (سفري - green), and Delivery (توصيل - orange).
+    *   عرض أرقام طلبات بارزة مع شارات ملونة ذات تباين عالٍ لتمييز نوع الطلب: محلي (أزرق)، سفري (أخضر)، وتوصيل (برتقالي).
+*   **Linked & Unlinked Addons Support | دعم إضافات المنتجات**: Full rendering of unlinked/custom textual additions (in amber-orange under item names) and linked checklist addons to ensure preparation accuracy.
+    *   دعم عرض الإضافات النصية المخصصة (باللون البرتقالي تحت المنتج) والإضافات المرتبطة لضمان دقة التحضير.
+*   **Touchscreen-Friendly Toggles | تحسينات شاشات اللمس**: Replaced small checkboxes with large, responsive circular tap buttons. Tapping anywhere on the product row's table cell triggers the check/uncheck status.
+    *   استبدال خانات الاختيار الصغيرة بأزرار دائرية تفاعلية كبيرة وسهلة النقر بمجرد لمس أي جزء من خلية جدول المنتج.
+*   **Arabic/English Instant Toggle & RTL/LTR Layout | تبديل فوري للغة والاتجاه**: An integrated language switch in the header that instantly updates KDS text and dynamically flips the layout direction (RTL / LTR).
+    *   تبديل فوري ومباشر في ترويسة الصفحة للغة والاتجاه (من اليمين لليسار للعربية ومن اليسار لليمين للإنجليزية).
+*   **No-Scroll Dynamic Card Heights | بطاقات ذكية مرنة الارتفاع**: Order cards expand dynamically based on product counts, avoiding browser scrollbars and providing a clean, single-viewport display.
+    *   تمدد بطاقات الطلبات تلقائياً لتناسب عدد المنتجات دون ظهور أشرطة تمرير المتصفح لتوفير عرض مريح.
+*   **Audio Chime Notifications | تنبيهات صوتية للطلبات الجديدة**: Automatic synthetic dual-tone chime sound alerts kitchen staff when a new order enters the queue.
+    *   تنبيه صوتي تفاعلي تلقائي لإعلام الطهاة فور دخول طلب جديد إلى قائمة التحضير.
+*   **Direct Kitchen Order Ticket (KOT) Printing | طباعة بونات التحضير المباشرة**: Silent, direct thermal printing utilizing a hidden iframe to prevent popup-blocker issues on remote servers.
+    *   طباعة صامتة ومباشرة على الطابعات الحرارية عبر نافذة خفية دون مشاكل حظر النوافذ المنبثقة.
+
 
 ### How to Install
 
