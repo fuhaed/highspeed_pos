@@ -100,7 +100,9 @@ def create_opening_voucher(pos_profile, company, balance_details):
     )
 
     data = {}
-    data["hspos_opening_shift"] = new_pos_opening.as_dict()
+    opening_dict = new_pos_opening.as_dict()
+    data["hspos_opening_shift"] = opening_dict
+    data["pos_opening_shift"] = opening_dict # Provide pos_opening_shift for flutter compatibility
     update_opening_shift_data(data, new_pos_opening.pos_profile)
     return data
 
@@ -121,9 +123,11 @@ def check_opening_shift(user):
     data = ""
     if len(open_vouchers) > 0:
         data = {}
-        data["hspos_opening_shift"] = frappe.get_doc(
+        opening_shift_doc = frappe.get_doc(
             "HSPOS Opening Shift", open_vouchers[0]["name"]
         )
+        data["hspos_opening_shift"] = opening_shift_doc
+        data["pos_opening_shift"] = opening_shift_doc # Provide pos_opening_shift for flutter compatibility
         update_opening_shift_data(data, open_vouchers[0]["pos_profile"])
     return data
 
@@ -186,7 +190,7 @@ def log_drawer_open(pos_profile, sales_invoice=None):
 
 @frappe.whitelist()
 def get_items(
-    pos_profile, price_list=None, item_group="", search_value="", customer=None
+    pos_profile, price_list=None, item_group="", search_value="", customer=None, limit=None, **kwargs
 ):
     _pos_profile = json.loads(pos_profile)
     use_price_list = _pos_profile.get("hspos_use_server_cache")
@@ -874,6 +878,10 @@ def submit_invoice(invoice, data):
         else:
             invoice_doc.hspos_order_type = "Dine-in"
 
+    # Initialize kitchen status if not set
+    if not invoice_doc.hspos_kitchen_status:
+        invoice_doc.hspos_kitchen_status = "Pending"
+
     invoice_doc.save()
 
     if data.get("due_date"):
@@ -1130,11 +1138,12 @@ def get_available_credit(customer, company):
 
 
 @frappe.whitelist()
-def get_draft_invoices(hspos_opening_shift):
+def get_draft_invoices(hspos_opening_shift=None, pos_opening_shift=None, **kwargs):
+    shift = hspos_opening_shift or pos_opening_shift
     invoices_list = frappe.get_list(
         "Sales Invoice",
         filters={
-            "hspos_hspos_opening_shift": hspos_opening_shift,
+            "hspos_hspos_opening_shift": shift,
             "docstatus": 0,
             "hspos_is_printed": 0,
         },
@@ -2715,3 +2724,28 @@ def update_kitchen_status(invoice_name, status):
     frappe.db.set_value("Sales Invoice", invoice_name, "hspos_kitchen_status", status)
     frappe.db.commit()
     return {"status": "success"}
+
+
+@frappe.whitelist()
+def get_closing_shift_data(opening_shift):
+    if isinstance(opening_shift, str):
+        try:
+            parsed = json.loads(opening_shift)
+            if isinstance(parsed, dict):
+                opening_shift_data = parsed
+            else:
+                opening_shift_data = frappe.get_doc("HSPOS Opening Shift", opening_shift).as_dict()
+        except Exception:
+            opening_shift_data = frappe.get_doc("HSPOS Opening Shift", opening_shift).as_dict()
+    else:
+        opening_shift_data = opening_shift
+
+    from highspeed_pos.highspeed_pos.doctype.hspos_closing_shift.hspos_closing_shift import make_closing_shift_from_opening
+    closing_shift_doc = make_closing_shift_from_opening(opening_shift_data)
+    return closing_shift_doc.as_dict()
+
+
+@frappe.whitelist()
+def submit_closing_shift(closing_shift):
+    from highspeed_pos.highspeed_pos.doctype.hspos_closing_shift.hspos_closing_shift import submit_closing_shift as submit_shift
+    return submit_shift(closing_shift)
