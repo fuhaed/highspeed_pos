@@ -2753,12 +2753,25 @@ def submit_closing_shift(closing_shift):
 
 def after_migrate():
     """
-    Automatically reloads the HIGHSPEED POS workspace to keep it fresh and update layout cards/links.
+    Automatically resets and reloads the HIGHSPEED POS workspace from code,
+    cleaning up any customized or corrupted database records.
     """
     try:
-        workspace_name = "HIGHSPEED POS"
-        if frappe.db.exists("Workspace", workspace_name):
-            frappe.reload_doc("highspeed_pos", "workspace", "highspeed_pos", force=True)
-            frappe.db.commit()
+        # 1. Delete user-customized copies of the workspace
+        customized_workspaces = frappe.get_all(
+            "Workspace",
+            filters={"title": "HIGHSPEED POS", "for_user": ["!=", ""]},
+            fields=["name"]
+        )
+        for ws in customized_workspaces:
+            frappe.delete_doc("Workspace", ws.name, ignore_permissions=True, force=True)
+            
+        # 2. Delete the standard workspace record from database to force a clean reload
+        if frappe.db.exists("Workspace", "HIGHSPEED POS"):
+            frappe.delete_doc("Workspace", "HIGHSPEED POS", ignore_permissions=True, force=True)
+            
+        # 3. Reload the clean standard workspace from the JSON file
+        frappe.reload_doc("highspeed_pos", "workspace", "highspeed_pos", force=True)
+        frappe.db.commit()
     except Exception as e:
-        frappe.log_error(f"Error reloading workspace in migration: {str(e)}", "HIGHSPEED POS Migration Hook")
+        frappe.log_error(f"Error resetting workspace in migration: {str(e)}", "HIGHSPEED POS Migration Hook")
