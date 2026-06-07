@@ -921,9 +921,9 @@ export default {
             vm.invoice_doc.name = r.message.name;
           }
 
-          // Set table status to Available in database
+          // Set table status to Occupied in database (freed only manually from tables screen)
           if (vm.invoice_doc.hspos_table) {
-            vm.updateTableStatus(vm.invoice_doc.hspos_table, "Available");
+            vm.updateTableStatus(vm.invoice_doc.hspos_table, "Occupied");
           }
          
           if (vm.invoice_doc.is_return && vm.invoice_doc.return_against && !vm.is_cashback) {

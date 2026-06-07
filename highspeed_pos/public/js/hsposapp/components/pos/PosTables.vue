@@ -247,7 +247,8 @@ export default {
       // Free the table back to Available if deselected
       const tableToFree = tableName || this.selectedTable;
       if (tableToFree) {
-        this.updateTableStatus(tableToFree, "Available");
+        // Do not automatically free table on deselection. Releasing table is done manually from tables screen.
+        // this.updateTableStatus(tableToFree, "Available");
       }
       this.selectedTable = "";
     });
