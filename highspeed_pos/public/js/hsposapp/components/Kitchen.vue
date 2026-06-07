@@ -20,25 +20,25 @@
         <v-spacer></v-spacer>
 
         <!-- Centered Stats Counters (visible only on large desktop screens to prevent crowding) -->
-        <div class="d-none d-lg-flex gap-2 align-center">
+        <div class="d-none d-xl-flex gap-2 align-center">
           <v-chip color="error" variant="flat" class="font-weight-bold px-3" size="small">
             <v-icon start size="14">mdi-clock-alert-outline</v-icon>
             <span class="ms-1">{{ pendingCount }}</span>
-            <span class="d-none d-xl-inline ms-1">{{ __('Pending') }}</span>
+            <span class="ms-1">{{ __('Pending') }}</span>
           </v-chip>
           <v-chip color="warning" variant="flat" class="font-weight-bold px-3" size="small">
             <v-icon start size="14">mdi-fire</v-icon>
             <span class="ms-1">{{ preparingCount }}</span>
-            <span class="d-none d-xl-inline ms-1">{{ __('Preparing') }}</span>
+            <span class="ms-1">{{ __('Preparing') }}</span>
           </v-chip>
           <v-chip color="success" variant="flat" class="font-weight-bold px-3" size="small">
             <v-icon start size="14">mdi-check-decagram-outline</v-icon>
             <span class="ms-1">{{ completedTodayCount }}</span>
-            <span class="d-none d-xl-inline ms-1">{{ __('Done Today') }}</span>
+            <span class="ms-1">{{ __('Done Today') }}</span>
           </v-chip>
         </div>
 
-        <v-spacer class="d-none d-lg-block"></v-spacer>
+        <v-spacer class="d-none d-xl-block"></v-spacer>
 
         <!-- System Time & Control buttons -->
         <div class="d-flex align-center gap-1 gap-sm-2">
