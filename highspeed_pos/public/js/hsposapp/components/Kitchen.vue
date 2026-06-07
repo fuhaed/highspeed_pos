@@ -20,25 +20,25 @@
         <v-spacer></v-spacer>
 
         <!-- Centered Stats Counters (visible only on large desktop screens to prevent crowding) -->
-        <div class="d-none d-xl-flex gap-2 align-center">
+        <div class="d-flex gap-2 align-center kds-desktop-only">
           <v-chip color="error" variant="flat" class="font-weight-bold px-3" size="small">
             <v-icon start size="14">mdi-clock-alert-outline</v-icon>
             <span class="ms-1">{{ pendingCount }}</span>
-            <span class="ms-1">{{ __('Pending') }}</span>
+            <span class="kds-label-desktop ms-1">{{ __('Pending') }}</span>
           </v-chip>
           <v-chip color="warning" variant="flat" class="font-weight-bold px-3" size="small">
             <v-icon start size="14">mdi-fire</v-icon>
             <span class="ms-1">{{ preparingCount }}</span>
-            <span class="ms-1">{{ __('Preparing') }}</span>
+            <span class="kds-label-desktop ms-1">{{ __('Preparing') }}</span>
           </v-chip>
           <v-chip color="success" variant="flat" class="font-weight-bold px-3" size="small">
             <v-icon start size="14">mdi-check-decagram-outline</v-icon>
             <span class="ms-1">{{ completedTodayCount }}</span>
-            <span class="ms-1">{{ __('Done Today') }}</span>
+            <span class="kds-label-desktop ms-1">{{ __('Done Today') }}</span>
           </v-chip>
         </div>
 
-        <v-spacer class="d-none d-xl-block"></v-spacer>
+        <v-spacer class="kds-desktop-only"></v-spacer>
 
         <!-- System Time & Control buttons -->
         <div class="d-flex align-center gap-1 gap-sm-2">
@@ -86,7 +86,7 @@
           </v-btn>
 
           <!-- Desktop Utility Buttons (visible on lg and up) -->
-          <div class="d-none d-lg-flex align-center gap-1">
+          <div class="d-flex align-center gap-1 kds-desktop-only">
             <v-btn
               icon
               variant="text"
@@ -141,7 +141,7 @@
                 color="white"
                 v-bind="props"
                 size="small"
-                class="ms-1 d-lg-none"
+                class="ms-1 kds-mobile-only"
               >
                 <v-icon>mdi-dots-vertical</v-icon>
               </v-btn>
@@ -1064,6 +1064,23 @@ export default {
 </script>
 
 <style scoped>
+/* Responsive display helpers */
+@media (max-width: 1279px) {
+  .kds-desktop-only {
+    display: none !important;
+  }
+}
+@media (min-width: 1280px) {
+  .kds-mobile-only {
+    display: none !important;
+  }
+}
+@media (max-width: 1599px) {
+  .kds-label-desktop {
+    display: none !important;
+  }
+}
+
 /* Glassmorphism theme styling */
 .kds-app-container {
   background-color: #080c14 !important;
