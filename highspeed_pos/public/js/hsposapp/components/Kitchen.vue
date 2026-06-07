@@ -203,11 +203,10 @@
               v-for="order in filteredOrders"
               :key="order.name"
               cols="12"
-              sm="6"
-              md="4"
-              lg="3"
-              xl="2"
-              class="d-flex pa-1.5"
+              sm="4"
+              md="3"
+              lg="2"
+              class="d-flex pa-1"
             >
               <v-card
                 class="kds-order-card flex-grow-1 d-flex flex-column border-glass bg-glass elevation-6"
@@ -219,11 +218,16 @@
               >
                 <!-- Compact Card Header -->
                 <div class="pa-2 bg-glass-dark d-flex flex-column flex-grow-0 border-bottom-glass">
-                  <div class="d-flex justify-space-between align-center">
-                    <div class="d-flex align-center gap-1-5">
-                      <span class="text-h6 font-weight-black text-white font-mono leading-none" style="font-size: 20px !important; text-shadow: 0 0 10px rgba(255,255,255,0.25);">
+                  <div class="kds-card-header-grid w-100">
+                    <!-- Order Number -->
+                    <div class="d-flex align-center justify-start">
+                      <span class="text-h6 font-weight-black text-white font-mono leading-none" style="font-size: 18px !important; text-shadow: 0 0 10px rgba(255,255,255,0.25);">
                         #{{ order.hspos_order_no || order.name.slice(-5) }}
                       </span>
+                    </div>
+
+                    <!-- Order Type (Center) -->
+                    <div class="d-flex align-center justify-center">
                       <span
                         v-if="order.hspos_order_type"
                         class="order-type-badge font-weight-black"
@@ -232,11 +236,16 @@
                         {{ formatOrderType(order.hspos_order_type) }}
                       </span>
                     </div>
-                    <div
-                      class="text-caption font-weight-bold font-mono px-1.5 py-0.5 rounded leading-none"
-                      :class="isOrderOverdue(order.creation) ? 'bg-red-glow text-white animate-pulse' : 'bg-grey-darken-4 text-grey-lighten-2'"
-                    >
-                      {{ getElapsedTime(order.creation) }}
+
+                    <!-- Elapsed Time -->
+                    <div class="d-flex align-center justify-end">
+                      <div
+                        class="text-caption font-weight-bold font-mono px-1.5 py-0.5 rounded leading-none"
+                        :class="isOrderOverdue(order.creation) ? 'bg-red-glow text-white animate-pulse' : 'bg-grey-darken-4 text-grey-lighten-2'"
+                        style="font-size: 10px !important;"
+                      >
+                        {{ getElapsedTime(order.creation) }}
+                      </div>
                     </div>
                   </div>
                   <div class="d-flex justify-space-between align-center mt-1" style="font-size: 11px; line-height: 1.1;">
@@ -264,7 +273,7 @@
                       <template v-for="item in order.items" :key="item.name">
                         <!-- Base Item Row -->
                         <tr :class="{ 'item-checked-row': checkedItems[item.name] }">
-                          <td class="text-start py-1 border-bottom-glass" style="font-size: 11px; line-height: 1.15;">
+                          <td class="text-start py-0.5 border-bottom-glass" style="font-size: 11px; line-height: 1.15;">
                             <div class="font-weight-bold text-white">
                               {{ item.item_name }}
                             </div>
@@ -277,18 +286,18 @@
                               {{ item.hspos_notes }}
                             </div>
                           </td>
-                          <td class="text-center font-weight-black text-primary py-1 font-mono border-bottom-glass" style="font-size: 12px;">
+                          <td class="text-center font-weight-black text-primary py-0.5 font-mono border-bottom-glass" style="font-size: 12px;">
                             {{ item.qty }}
                           </td>
-                          <td class="text-center py-1 border-bottom-glass cursor-pointer" @click.stop="toggleItemCheck(item.name)">
+                          <td class="text-center py-0.5 border-bottom-glass cursor-pointer" @click.stop="toggleItemCheck(item.name)">
                             <v-btn
                               icon
                               variant="text"
                               :color="checkedItems[item.name] ? 'success' : 'grey-lighten-1'"
                               size="small"
-                              style="width: 32px; height: 32px; min-width: unset; margin: 0; padding: 0;"
+                              style="width: 26px; height: 26px; min-width: unset; margin: 0; padding: 0;"
                             >
-                              <v-icon size="22">
+                              <v-icon size="20">
                                 {{ checkedItems[item.name] ? 'mdi-check-circle' : 'mdi-circle-outline' }}
                               </v-icon>
                             </v-btn>
@@ -1169,7 +1178,7 @@ export default {
   border-radius: 8px !important;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   overflow: hidden;
-  min-height: 200px;
+  min-height: 160px;
   height: auto;
 }
 
@@ -1289,8 +1298,8 @@ export default {
   background: rgba(30, 144, 255, 0.25) !important;
   color: #3090ff !important;
   border: 2px solid #3090ff !important;
-  font-size: 13px !important;
-  padding: 2px 8px !important;
+  font-size: 11px !important;
+  padding: 1px 6px !important;
   border-radius: 4px !important;
   display: inline-block !important;
   line-height: 1.2 !important;
@@ -1300,8 +1309,8 @@ export default {
   background: rgba(0, 200, 83, 0.25) !important;
   color: #00c853 !important;
   border: 2px solid #00c853 !important;
-  font-size: 13px !important;
-  padding: 2px 8px !important;
+  font-size: 11px !important;
+  padding: 1px 6px !important;
   border-radius: 4px !important;
   display: inline-block !important;
   line-height: 1.2 !important;
@@ -1311,8 +1320,8 @@ export default {
   background: rgba(255, 61, 0, 0.25) !important;
   color: #ff3d00 !important;
   border: 2px solid #ff3d00 !important;
-  font-size: 13px !important;
-  padding: 2px 8px !important;
+  font-size: 11px !important;
+  padding: 1px 6px !important;
   border-radius: 4px !important;
   display: inline-block !important;
   line-height: 1.2 !important;
@@ -1320,5 +1329,13 @@ export default {
 
 .gap-1-5 {
   gap: 6px;
+}
+
+.kds-card-header-grid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  width: 100%;
+  gap: 4px;
 }
 </style>
