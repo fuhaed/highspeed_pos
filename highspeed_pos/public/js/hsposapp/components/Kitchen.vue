@@ -1,117 +1,159 @@
 <template>
   <v-app class="kds-app-container" :dir="currentLang === 'ar' ? 'rtl' : 'ltr'">
     <!-- Top Glassmorphic Navigation bar -->
-    <v-app-bar flat class="kds-navbar px-4">
+    <v-app-bar flat class="kds-navbar px-2 px-sm-4">
       <div class="d-flex align-center w-100">
         <!-- Logo & Title -->
-        <v-avatar color="rgba(255, 255, 255, 0.08)" size="40" class="me-3 brand-glow">
-          <v-icon color="#58a6ff" size="20">mdi-stove</v-icon>
+        <v-avatar color="rgba(255, 255, 255, 0.08)" size="36" class="me-2 brand-glow d-none d-sm-flex">
+          <v-icon color="#58a6ff" size="18">mdi-stove</v-icon>
         </v-avatar>
         <div>
-          <div class="kds-title font-weight-bold text-uppercase">
+          <div class="kds-title font-weight-bold text-uppercase" style="font-size: 15px !important; letter-spacing: 1px;">
             <span class="text-white font-weight-light">HSPOS</span>
             <span class="text-primary font-weight-black ms-1">Kitchen</span>
           </div>
-          <span class="text-caption text-grey-darken-1 font-mono">Live KDS Control</span>
+          <span class="text-caption text-grey-darken-1 font-mono d-none d-md-inline" style="font-size: 9px !important;">Live KDS Control</span>
         </div>
 
         <v-spacer></v-spacer>
 
-        <!-- Stats Counters -->
-        <div class="d-flex gap-2 me-6 align-center d-none d-md-flex">
-          <v-chip color="error" variant="flat" class="font-weight-bold px-3">
-            <v-icon start size="14">mdi-clock-alert-outline</v-icon>
-            {{ pendingCount }} {{ __('Pending') }}
+        <!-- Stats Counters (visible on sm and up) -->
+        <div class="d-none d-sm-flex gap-1.5 gap-md-2 me-2 me-md-6 align-center">
+          <v-chip color="error" variant="flat" class="font-weight-bold px-2 px-md-3" size="small">
+            <v-icon start size="14" class="me-1">mdi-clock-alert-outline</v-icon>
+            {{ pendingCount }} <span class="d-none d-md-inline ms-1">{{ __('Pending') }}</span>
           </v-chip>
-          <v-chip color="warning" variant="flat" class="font-weight-bold px-3">
-            <v-icon start size="14">mdi-fire</v-icon>
-            {{ preparingCount }} {{ __('Preparing') }}
+          <v-chip color="warning" variant="flat" class="font-weight-bold px-2 px-md-3" size="small">
+            <v-icon start size="14" class="me-1">mdi-fire</v-icon>
+            {{ preparingCount }} <span class="d-none d-md-inline ms-1">{{ __('Preparing') }}</span>
           </v-chip>
-          <v-chip color="success" variant="flat" class="font-weight-bold px-3">
-            <v-icon start size="14">mdi-check-decagram-outline</v-icon>
-            {{ completedTodayCount }} {{ __('Done Today') }}
+          <v-chip color="success" variant="flat" class="font-weight-bold px-2 px-md-3" size="small">
+            <v-icon start size="14" class="me-1">mdi-check-decagram-outline</v-icon>
+            {{ completedTodayCount }} <span class="d-none d-md-inline ms-1">{{ __('Done Today') }}</span>
           </v-chip>
         </div>
 
         <!-- System Time & Control buttons -->
-        <div class="d-flex align-center gap-2">
-          <div class="text-white font-mono me-4 d-none d-sm-block text-subtitle-2 bg-glass py-1 px-3 rounded-lg border-glass">
-            <v-icon start size="14" color="grey">mdi-clock-outline</v-icon>
+        <div class="d-flex align-center gap-1 gap-sm-2">
+          <!-- System clock (hidden on mobile) -->
+          <div class="text-white font-mono me-2 d-none d-sm-block text-caption bg-glass py-1 px-3 rounded-lg border-glass">
+            <v-icon start size="12" color="grey">mdi-clock-outline</v-icon>
             {{ liveTime }}
           </div>
 
-          <v-btn
-            icon
-            variant="text"
-            color="white"
-            @click="toggleSound"
-            :title="__('Toggle Chime Alert')"
-          >
-            <v-icon>{{ soundEnabled ? 'mdi-volume-high' : 'mdi-volume-off' }}</v-icon>
-          </v-btn>
-
-          <v-btn
-            icon
-            variant="text"
-            color="white"
-            @click="testSound"
-            :title="__('Test Sound Chime')"
-          >
-            <v-icon color="grey-lighten-1">mdi-bell-ring</v-icon>
-          </v-btn>
-
-          <v-btn
-            icon
-            variant="text"
-            color="white"
-            @click="toggleFullscreen"
-            :title="__('Toggle Fullscreen')"
-          >
-            <v-icon>{{ isFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen' }}</v-icon>
-          </v-btn>
-
-          <v-btn
-            icon
-            variant="text"
-            color="white"
-            @click="settingsDialog = true"
-            :title="__('KDS Settings')"
-          >
-            <v-icon>mdi-cog</v-icon>
-          </v-btn>
-
+          <!-- Refresh (always visible, icon-only on xs/mobile) -->
           <v-btn
             variant="flat"
             color="primary"
-            prepend-icon="mdi-refresh"
             :loading="loading"
             @click="fetchOrders(true)"
-            class="rounded-lg font-weight-bold"
+            class="rounded-lg font-weight-bold px-2 px-sm-3"
+            style="min-width: unset; height: 36px;"
           >
-            {{ __('Refresh') }}
+            <v-icon class="me-0 me-sm-1" size="18">mdi-refresh</v-icon>
+            <span class="d-none d-sm-inline">{{ __('Refresh') }}</span>
           </v-btn>
 
+          <!-- Desk (always visible, icon-only on xs/mobile) -->
           <v-btn
             variant="outlined"
             color="grey-lighten-1"
-            prepend-icon="mdi-home"
             @click="goDesk"
-            class="rounded-lg font-weight-bold border-glass ms-2"
+            class="rounded-lg font-weight-bold border-glass ms-1 ms-sm-2 px-2 px-sm-3"
+            style="min-width: unset; height: 36px;"
           >
-            {{ __('Desk') }}
+            <v-icon class="me-0 me-sm-1" size="18">mdi-home</v-icon>
+            <span class="d-none d-sm-inline">{{ __('Desk') }}</span>
           </v-btn>
 
-          <!-- Language Toggle Button -->
+          <!-- Language Toggle Button (always visible, compact) -->
           <v-btn
             variant="outlined"
             color="white"
             @click="toggleLanguage"
-            class="rounded-lg font-weight-bold border-glass ms-2"
+            class="rounded-lg font-weight-bold border-glass ms-1 ms-sm-2"
             size="small"
-            style="min-width: 65px; height: 36px; padding: 0 10px;"
+            style="min-width: 55px; height: 36px; padding: 0 8px; font-size: 11px;"
           >
-            {{ currentLang === 'ar' ? 'English' : 'عربي' }}
+            {{ currentLang === 'ar' ? 'EN' : 'عربي' }}
           </v-btn>
+
+          <!-- Desktop Utility Buttons (visible on md and up) -->
+          <div class="d-none d-md-flex align-center gap-1">
+            <v-btn
+              icon
+              variant="text"
+              color="white"
+              size="small"
+              @click="toggleSound"
+              :title="__('Toggle Chime Alert')"
+            >
+              <v-icon>{{ soundEnabled ? 'mdi-volume-high' : 'mdi-volume-off' }}</v-icon>
+            </v-btn>
+
+            <v-btn
+              icon
+              variant="text"
+              color="white"
+              size="small"
+              @click="testSound"
+              :title="__('Test Sound Chime')"
+            >
+              <v-icon color="grey-lighten-1">mdi-bell-ring</v-icon>
+            </v-btn>
+
+            <v-btn
+              icon
+              variant="text"
+              color="white"
+              size="small"
+              @click="toggleFullscreen"
+              :title="__('Toggle Fullscreen')"
+            >
+              <v-icon>{{ isFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen' }}</v-icon>
+            </v-btn>
+
+            <v-btn
+              icon
+              variant="text"
+              color="white"
+              size="small"
+              @click="settingsDialog = true"
+              :title="__('KDS Settings')"
+            >
+              <v-icon>mdi-cog</v-icon>
+            </v-btn>
+          </div>
+
+          <!-- Mobile/Tablet Dropdown Menu (visible on sm and down) -->
+          <v-menu location="bottom end">
+            <template v-slot:activator="{ props }">
+              <v-btn
+                icon
+                variant="text"
+                color="white"
+                v-bind="props"
+                size="small"
+                class="ms-1 d-md-none"
+              >
+                <v-icon>mdi-dots-vertical</v-icon>
+              </v-btn>
+            </template>
+            <v-list class="bg-glass border-glass rounded-lg mt-1" density="compact" nav style="background: #0d1117 !important;">
+              <v-list-item @click="toggleSound" prepend-icon="mdi-volume-high" class="text-white">
+                <v-list-item-title>{{ soundEnabled ? __('Disable Sound') : __('Enable Sound') }}</v-list-item-title>
+              </v-list-item>
+              <v-list-item @click="testSound" prepend-icon="mdi-bell-ring" class="text-white">
+                <v-list-item-title>{{ __('Test Sound Chime') }}</v-list-item-title>
+              </v-list-item>
+              <v-list-item @click="toggleFullscreen" :prepend-icon="isFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'" class="text-white">
+                <v-list-item-title>{{ isFullscreen ? __('Exit Fullscreen') : __('Fullscreen') }}</v-list-item-title>
+              </v-list-item>
+              <v-list-item @click="settingsDialog = true" prepend-icon="mdi-cog" class="text-white">
+                <v-list-item-title>{{ __('KDS Settings') }}</v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
         </div>
       </div>
     </v-app-bar>
@@ -154,9 +196,10 @@
               v-for="order in filteredOrders"
               :key="order.name"
               cols="12"
-              sm="4"
-              md="3"
-              lg="2"
+              sm="6"
+              md="4"
+              lg="3"
+              xl="2"
               class="d-flex pa-1.5"
             >
               <v-card
