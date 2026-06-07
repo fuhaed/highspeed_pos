@@ -10,7 +10,7 @@
     <OpeningDialog v-if="dialog" :dialog="dialog"></OpeningDialog>
     <v-row v-show="!dialog" :class="{ 'flex-row-reverse': isRTL }" style="height: 100%; margin: 0;">
       <!-- منطقة الأصناف - 70% من المساحة -->
-      <v-col v-show="!payment && !offers && !coupons" xl="8" lg="8" md="8" sm="8" cols="12" class="pos px-2 pt-2 pb-0">
+      <v-col v-show="!payment && !offers && !coupons && !tables" xl="8" lg="8" md="8" sm="8" cols="12" class="pos px-2 pt-2 pb-0">
         <ItemsSelector></ItemsSelector>
       </v-col>
       <v-col v-show="offers" xl="8" lg="8" md="8" sm="8" cols="12" class="pos px-2 pt-2 pb-0">
@@ -21,6 +21,9 @@
       </v-col>
       <v-col v-show="payment" xl="8" lg="8" md="8" sm="8" cols="12" class="pos px-2 pt-2 pb-0">
         <Payments></Payments>
+      </v-col>
+      <v-col v-show="tables" xl="8" lg="8" md="8" sm="8" cols="12" class="pos px-2 pt-2 pb-0">
+        <PosTables></PosTables>
       </v-col>
 
       <!-- منطقة سلة المشتريات - 30% من المساحة -->
@@ -45,6 +48,7 @@ import NewAddress from './NewAddress.vue';
 import Variants from './Variants.vue';
 import Returns from './Returns.vue';
 import MpesaPayments from './Mpesa-Payments.vue';
+import PosTables from './PosTables.vue';
 
 export default {
   data: function () {
@@ -55,6 +59,7 @@ export default {
       payment: false,
       offers: false,
       coupons: false,
+      tables: false,
       isRTL: false,
     };
   },
@@ -73,6 +78,7 @@ export default {
     Variants,
     MpesaPayments,
     SalesOrders,
+    PosTables,
   },
 
   methods: {
@@ -173,16 +179,25 @@ export default {
       this.payment = data === 'true';
       this.offers = false;
       this.coupons = false;
+      this.tables = false;
     },
     handleShowOffers(data) {
       this.offers = data === 'true';
       this.payment = false;
       this.coupons = false;
+      this.tables = false;
     },
     handleShowCoupons(data) {
       this.coupons = data === 'true';
       this.offers = false;
       this.payment = false;
+      this.tables = false;
+    },
+    handleShowTables(data) {
+      this.tables = data === 'true';
+      this.payment = false;
+      this.offers = false;
+      this.coupons = false;
     },
     handleOpenClosingDialog() {
       this.get_closing_data();
@@ -225,6 +240,7 @@ export default {
       this.eventBus.on('show_payment', this.handleShowPayment);
       this.eventBus.on('show_offers', this.handleShowOffers);
       this.eventBus.on('show_coupons', this.handleShowCoupons);
+      this.eventBus.on('show_tables', this.handleShowTables);
       this.eventBus.on('open_closing_dialog', this.handleOpenClosingDialog);
       this.eventBus.on('submit_closing_pos', this.handleSubmitClosingPos);
       this.eventBus.on('closing_print_done', this.handleClosingPrintDone);
@@ -240,6 +256,7 @@ export default {
     this.eventBus.off('show_payment', this.handleShowPayment);
     this.eventBus.off('show_offers', this.handleShowOffers);
     this.eventBus.off('show_coupons', this.handleShowCoupons);
+    this.eventBus.off('show_tables', this.handleShowTables);
     this.eventBus.off('open_closing_dialog', this.handleOpenClosingDialog);
     this.eventBus.off('submit_closing_pos', this.handleSubmitClosingPos);
     this.eventBus.off('closing_print_done', this.handleClosingPrintDone);

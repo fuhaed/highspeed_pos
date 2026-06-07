@@ -2689,7 +2689,7 @@ def get_kitchen_orders(pos_profile=None, max_age_mins=None, pos_only=True):
     invoices = frappe.get_all(
         "Sales Invoice",
         filters=filters,
-        fields=["name", "customer", "posting_date", "posting_time", "grand_total", "hspos_kitchen_status", "hspos_order_no", "hspos_order_type", "creation", "company"],
+        fields=["name", "customer", "posting_date", "posting_time", "grand_total", "hspos_kitchen_status", "hspos_order_no", "hspos_order_type", "hspos_table", "creation", "company"],
         order_by="creation asc"
     )
     

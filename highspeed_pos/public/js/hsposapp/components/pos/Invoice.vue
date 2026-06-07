@@ -38,77 +38,23 @@
               class="type-select"
             />
           </v-col>
-        </v-row>
-
-        <!-- Order Number & Restaurant Selector (Merged for compact layout) -->
-        <v-row v-if="pos_profile && (pos_profile.hspos_enable_order_number || pos_profile.hspos_allow_dine_in || pos_profile.hspos_allow_takeaway || pos_profile.hspos_allow_delivery)" dense class="pa-2 pt-0 align-center">
-          <!-- Order Number Chip -->
-          <v-col
-            v-if="pos_profile.hspos_enable_order_number"
-            :cols="pos_profile.hspos_allow_dine_in || pos_profile.hspos_allow_takeaway || pos_profile.hspos_allow_delivery ? '4' : '12'"
-            class="d-flex"
-          >
+          <!-- Table Selection Chip -->
+          <v-col cols="12" v-if="pos_profile && pos_profile.hspos_enable_dining_tables && selected_table" class="pt-0">
             <v-chip
               color="teal-darken-1"
               variant="flat"
+              closable
+              @click:close="clear_selected_table"
               class="font-weight-bold px-2 py-1 text-subtitle-2 elevation-1 text-white w-100 justify-center"
               style="height: 36px; border-radius: 4px !important;"
             >
-              <v-icon start size="16" class="me-1">mdi-pound</v-icon>
-              {{ __("Order #") }}{{ pos_profile.hspos_next_order_number || 1 }}
+              <v-icon start size="16" class="me-1">mdi-table-chair</v-icon>
+              {{ __("Table") }}: {{ selected_table }}
             </v-chip>
           </v-col>
-
-          <!-- Restaurant Order Type Toggle -->
-          <v-col
-            v-if="pos_profile.hspos_allow_dine_in || pos_profile.hspos_allow_takeaway || pos_profile.hspos_allow_delivery"
-            :cols="pos_profile.hspos_enable_order_number ? '8' : '12'"
-            class="d-flex"
-          >
-            <v-btn-toggle
-              v-model="order_type"
-              mandatory
-              density="compact"
-              color="primary"
-              variant="outlined"
-              class="order-type-toggle w-100"
-              style="height: 36px;"
-            >
-              <v-btn
-                v-if="pos_profile.hspos_allow_dine_in"
-                value="Dine-in"
-                class="flex-grow-1"
-                size="small"
-                style="height: 36px; min-width: 0;"
-              >
-                <v-icon size="small" class="me-1">mdi-silverware-fork-knife</v-icon>
-                <span>{{ __("Dine-in") }}</span>
-              </v-btn>
-              
-              <v-btn
-                v-if="pos_profile.hspos_allow_takeaway"
-                value="Takeaway"
-                class="flex-grow-1"
-                size="small"
-                style="height: 36px; min-width: 0;"
-              >
-                <v-icon size="small" class="me-1">mdi-shopping</v-icon>
-                <span>{{ __("Takeaway") }}</span>
-              </v-btn>
-              
-              <v-btn
-                v-if="pos_profile.hspos_allow_delivery"
-                value="Delivery"
-                class="flex-grow-1"
-                size="small"
-                style="height: 36px; min-width: 0;"
-              >
-                <v-icon size="small" class="me-1">mdi-truck-delivery</v-icon>
-                <span>{{ __("Delivery") }}</span>
-              </v-btn>
-            </v-btn-toggle>
-          </v-col>
         </v-row>
+
+
 
         <v-row v-if="pos_profile.hspos_use_hspos_delivery_charges" dense class="pa-2 pt-0">
           <v-col cols="8">
@@ -636,6 +582,7 @@ export default {
       cancel_dialog: false,
       float_precision: 2,
       currency_precision: 2,
+      selected_table: "",
       new_line: false,
       hspos_delivery_charges: [],
       hspos_delivery_charges_rate: 0,
@@ -1435,6 +1382,26 @@ export default {
       return new_item;
     },
 
+    clear_selected_table() {
+      if (this.selected_table) {
+        this.eventBus.emit("table_deselected", this.selected_table);
+      }
+      this.selected_table = "";
+    },
+
+    updateTableStatus(tableName, status) {
+      if (!tableName) return;
+      frappe.call({
+        method: "frappe.client.set_value",
+        args: {
+          doctype: "POS Table",
+          name: tableName,
+          fieldname: "status",
+          value: status
+        }
+      });
+    },
+
     clear_invoice() {
       this.items = [];
       this.hspos_offers = [];
@@ -1445,6 +1412,7 @@ export default {
       this.tempPriceValues = {};
       this.customer = this.pos_profile.customer;
       this.invoice_doc = "";
+      this.selected_table = "";
       this.return_doc = "";
       this.discount_amount = 0;
       this.additional_discount_percentage = 0;
@@ -1505,6 +1473,9 @@ export default {
           color: "error",
         });
       } else {
+        if (doc.hspos_table) {
+          this.updateTableStatus(doc.hspos_table, "Occupied");
+        }
         this.eventBus.emit("show_message", {
           title: this.__("Invoice saved successfully"),
           color: "success",
@@ -1542,6 +1513,10 @@ export default {
       this.discount_amount = data.discount_amount;
       this.additional_discount_percentage = data.additional_discount_percentage;
       this.order_type = data.hspos_order_type || this.getDefaultOrderType();
+      this.selected_table = data.hspos_table || "";
+      if (this.selected_table) {
+        this.eventBus.emit("set_invoice_table", this.selected_table);
+      }
     },
 
     async load_return_invoice(data = {}) {
@@ -1594,6 +1569,7 @@ export default {
       doc.customer = this.customer;
       doc.hspos_hspos_opening_shift = this.hspos_opening_shift.name;
       doc.posting_date = this.posting_date;
+      doc.hspos_table = this.selected_table || "";
       
       const isReturn = this.invoiceType === 'Return' || this.invoice_doc.is_return;
       doc.is_return = isReturn ? 1 : 0;
@@ -2438,6 +2414,14 @@ export default {
       this.order_type = this.getDefaultOrderType();
     });
 
+    this.eventBus.on("update_order_type", (type) => {
+      this.order_type = type;
+    });
+
+    this.eventBus.on("set_invoice_table", (table) => {
+      this.selected_table = table || "";
+    });
+
     this.eventBus.on("set_offers", (offers) => {
       this.all_offers = offers;
       this.applyAutomaticOffers();
@@ -2540,16 +2524,18 @@ export default {
   beforeUnmount() {
     window.removeEventListener('keydown', this.handleKeyboardShortcuts);
     
-    this.eventBus.$off("register_pos_profile");
-    this.eventBus.$off("add_item");
-    this.eventBus.$off("update_customer");
-    this.eventBus.$off("fetch_customer_details");
-    this.eventBus.$off("clear_invoice");
-    this.eventBus.$off("load_invoice");
-    this.eventBus.$off("load_order");
-    this.eventBus.$off("load_return_invoice");
-    this.eventBus.$off("set_new_line");
-    this.eventBus.$off("set_all_items");
+    this.eventBus.off("register_pos_profile");
+    this.eventBus.off("add_item");
+    this.eventBus.off("update_customer");
+    this.eventBus.off("fetch_customer_details");
+    this.eventBus.off("clear_invoice");
+    this.eventBus.off("load_invoice");
+    this.eventBus.off("load_order");
+    this.eventBus.off("load_return_invoice");
+    this.eventBus.off("set_new_line");
+    this.eventBus.off("set_all_items");
+    this.eventBus.off("update_order_type");
+    this.eventBus.off("set_invoice_table");
   },
 
   watch: {
@@ -3363,11 +3349,22 @@ input[type="number"]::-webkit-inner-spin-button {
 /* Media Queries */
 @media (max-width: 1200px) {
   .secondary-actions {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
   }
   
   .item-card {
     margin-bottom: 6px;
+  }
+  
+
+  
+  .item-data-line {
+    gap: 6px !important;
+  }
+  
+  .data-group {
+    padding: 2px 4px !important;
+    min-height: 24px !important;
   }
 }
 
@@ -3479,17 +3476,7 @@ input[type="number"]::-webkit-inner-spin-button {
   }
 }
 
-.order-type-toggle {
-  display: flex;
-  width: 100%;
-  margin-bottom: 4px;
-}
-.order-type-toggle :deep(.v-btn) {
-  flex-grow: 1;
-  text-transform: none !important;
-  font-weight: 600 !important;
-  letter-spacing: normal !important;
-}
+
 
 /* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {

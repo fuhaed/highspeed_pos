@@ -18,10 +18,87 @@
        color="info">
      </v-progress-linear>
 
-     <v-card-text class="pa-2" style="max-height: 70vh; overflow-y: auto;">
-       <v-container fluid class="pa-0">
-         <v-row dense v-if="invoice_doc">
-           <v-col cols="12" sm="7" class="pe-1">
+      <v-card-text class="pa-2" style="max-height: 70vh; overflow-y: auto;">
+        <v-container fluid class="pa-0">
+          <v-row dense v-if="invoice_doc">
+            <!-- Order Number & Restaurant Selector (Moved to Payment Screen) -->
+            <v-col 
+              v-if="pos_profile && (pos_profile.hspos_enable_order_number || pos_profile.hspos_allow_dine_in || pos_profile.hspos_allow_takeaway || pos_profile.hspos_allow_delivery)" 
+              cols="12" 
+              class="mb-2 px-1"
+            >
+              <v-card outlined class="pa-2 border-light elevation-0 bg-light-gray">
+                <v-row dense class="align-center">
+                  <!-- Order Number Box -->
+                  <v-col
+                    v-if="pos_profile.hspos_enable_order_number"
+                    cols="12"
+                    sm="4"
+                    class="d-flex"
+                  >
+                    <div class="order-number-display">
+                      <v-icon size="16" class="me-1">mdi-pound</v-icon>
+                      <span>{{ __("Order") }} #{{ pos_profile.hspos_next_order_number || 1 }}</span>
+                    </div>
+                  </v-col>
+
+                  <!-- Restaurant Order Type Toggle -->
+                  <v-col
+                    v-if="pos_profile.hspos_allow_dine_in || pos_profile.hspos_allow_takeaway || pos_profile.hspos_allow_delivery"
+                    cols="12"
+                    :sm="pos_profile.hspos_enable_order_number ? 8 : 12"
+                    class="d-flex"
+                  >
+                    <v-btn-toggle
+                      v-model="invoice_doc.hspos_order_type"
+                      mandatory
+                      density="compact"
+                      color="primary"
+                      variant="outlined"
+                      class="order-type-toggle w-100"
+                      style="height: 38px;"
+                    >
+                      <v-btn
+                        v-if="pos_profile.hspos_allow_dine_in"
+                        value="Dine-in"
+                        class="flex-grow-1"
+                        size="small"
+                        style="height: 38px; min-width: 0;"
+                      >
+                        <v-icon size="small" class="me-1">mdi-table-chair</v-icon>
+                        <span>{{ __("Dine-in") }}<span v-if="invoice_doc.hspos_table"> ({{ invoice_doc.hspos_table }})</span></span>
+                      </v-btn>
+                      
+                      <v-btn
+                        v-if="pos_profile.hspos_allow_takeaway"
+                        value="Takeaway"
+                        :disabled="!!invoice_doc.hspos_table"
+                        class="flex-grow-1"
+                        size="small"
+                        style="height: 38px; min-width: 0;"
+                      >
+                        <v-icon size="small" class="me-1">mdi-shopping</v-icon>
+                        <span>{{ __("Takeaway") }}</span>
+                      </v-btn>
+                      
+                      <v-btn
+                        v-if="pos_profile.hspos_allow_delivery"
+                        value="Delivery"
+                        :disabled="!!invoice_doc.hspos_table"
+                        class="flex-grow-1"
+                        size="small"
+                        style="height: 38px; min-width: 0;"
+                      >
+                        <v-icon size="small" class="me-1">mdi-truck-delivery</v-icon>
+                        <span>{{ __("Delivery") }}</span>
+                      </v-btn>
+                    </v-btn-toggle>
+                  </v-col>
+                </v-row>
+              </v-card>
+            </v-col>
+
+            <v-col cols="12" sm="7" class="pe-1">
              <v-card flat outlined class="pa-2">
                <div class="text-caption font-weight-medium mb-1">
                  {{ __('Payment Methods') }}
@@ -843,6 +920,11 @@ export default {
           if (r.message && r.message.name) {
             vm.invoice_doc.name = r.message.name;
           }
+
+          // Set table status to Available in database
+          if (vm.invoice_doc.hspos_table) {
+            vm.updateTableStatus(vm.invoice_doc.hspos_table, "Available");
+          }
          
           if (vm.invoice_doc.is_return && vm.invoice_doc.return_against && !vm.is_cashback) {
             frappe.call({
@@ -1041,6 +1123,18 @@ export default {
       this.invoice_doc.payments.forEach((payment) => {
         payment.amount = 0;
         payment.base_amount = 0;
+      });
+    },
+    updateTableStatus(tableName, status) {
+      if (!tableName) return;
+      frappe.call({
+        method: "frappe.client.set_value",
+        args: {
+          doctype: "POS Table",
+          name: tableName,
+          fieldname: "status",
+          value: status
+        }
       });
     },
     load_print_page() {
@@ -1582,6 +1676,9 @@ export default {
     this.$nextTick(function () {
       this.eventBus.on("send_invoice_doc_payment", async (invoice_doc) => {
         this.invoice_doc = invoice_doc;
+        if (this.invoice_doc && (this.invoice_doc.hspos_table || !this.invoice_doc.hspos_order_type)) {
+          this.invoice_doc.hspos_order_type = "Dine-in";
+        }
         this.paymentDialog = true;
         
         this.is_credit_sale = 0;
@@ -1716,6 +1813,11 @@ export default {
   },
 
   watch: {
+    'invoice_doc.hspos_order_type'(newVal) {
+      if (newVal) {
+        this.eventBus.emit("update_order_type", newVal);
+      }
+    },
     loyalty_amount(value) {
       if (value > this.available_pioints_amount) {
         this.invoice_doc.loyalty_amount = 0;
@@ -2197,5 +2299,36 @@ export default {
 
 [dir="rtl"] .payment-summary-card {
   direction: rtl;
+}
+
+.border-light {
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+.bg-light-gray {
+  background-color: #fcfcfc !important;
+}
+.order-type-toggle {
+  display: flex;
+  width: 100%;
+}
+.order-type-toggle :deep(.v-btn) {
+  flex-grow: 1;
+  text-transform: none !important;
+  font-weight: 600 !important;
+  letter-spacing: normal !important;
+}
+.order-number-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 38px;
+  width: 100%;
+  border: 1px solid rgba(7, 82, 148, 0.2);
+  border-radius: 4px;
+  background-color: rgba(7, 82, 148, 0.05);
+  color: #075294;
+  font-weight: 700;
+  font-size: 13px;
+  box-sizing: border-box;
 }
 </style>

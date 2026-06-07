@@ -233,7 +233,7 @@
                         class="order-type-badge font-weight-black"
                         :class="getOrderTypeClass(order.hspos_order_type)"
                       >
-                        {{ formatOrderType(order.hspos_order_type) }}
+                        {{ formatOrderType(order.hspos_order_type) }}<span v-if="order.hspos_table"> ({{ order.hspos_table }})</span>
                       </span>
                     </div>
 
@@ -1021,7 +1021,7 @@ export default {
           <div class="header">
             <div>*** ${this.__('KITCHEN TICKET')} ***</div>
             <div class="order-no">#${order.hspos_order_no || order.name.slice(-5)}</div>
-            ${order.hspos_order_type ? `<div class="print-order-type">${this.formatOrderType(order.hspos_order_type)}</div>` : ''}
+            ${order.hspos_order_type ? `<div class="print-order-type">${this.formatOrderType(order.hspos_order_type)}${order.hspos_table ? ` (${order.hspos_table})` : ''}</div>` : ''}
             <div class="meta">
               <b>${this.__('Invoice')}:</b> ${order.name}<br>
               <b>${this.__('Date')}:</b> ${order.posting_date} ${order.posting_time || ''}<br>

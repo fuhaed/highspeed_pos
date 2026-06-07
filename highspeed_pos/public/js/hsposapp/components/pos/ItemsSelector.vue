@@ -139,6 +139,11 @@
               <v-badge v-if="appliedCouponsCount > 0" :content="appliedCouponsCount" color="success" floating />
             </v-btn>
 
+            <v-btn v-if="pos_profile && pos_profile.hspos_enable_dining_tables" @click="show_tables" variant="outlined" size="small" color="teal" class="action-btn">
+              <v-icon size="small" class="me-1">mdi-table-chair</v-icon>
+              <span class="action-text">{{ __('Tables') }}<span v-if="selectedTable" class="ms-1 text-success">({{ selectedTable }})</span></span>
+            </v-btn>
+
             <div class="search-info">
               <v-chip v-if="search" size="small" color="primary" variant="outlined" closable @click:close="clearSearch">
                 "{{ search.substring(0, 10) }}{{ search.length > 10 ? '...' : '' }}"
@@ -433,6 +438,7 @@ export default {
     cartItemsMap: {},
     in_stock_only: false,
     sort_by: "default",
+    selectedTable: "",
   }),
 
   computed: {
@@ -686,6 +692,7 @@ export default {
 
     show_offers() { this.eventBus.emit("show_offers", "true"); },
     show_coupons() { this.eventBus.emit("show_coupons", "true"); },
+    show_tables() { this.eventBus.emit("show_tables", "true"); },
 
     click_item_row(event, { item }) { 
       if (!item) {
@@ -1368,6 +1375,18 @@ export default {
       }
       this.cartItemsMap = map;
     });
+
+    this.eventBus.on("set_invoice_table", (table) => {
+      this.selectedTable = table || "";
+    });
+
+    this.eventBus.on("table_deselected", () => {
+      this.selectedTable = "";
+    });
+
+    this.eventBus.on("clear_invoice", () => {
+      this.selectedTable = "";
+    });
   },
 
   mounted() {
@@ -1376,6 +1395,16 @@ export default {
 
   beforeUnmount() {
     window.removeEventListener('resize', this.onResize);
+    this.eventBus.off("register_pos_profile");
+    this.eventBus.off("set_all_items");
+    this.eventBus.off("update_offers_counters");
+    this.eventBus.off("update_coupons_counters");
+    this.eventBus.off("update_customer");
+    this.eventBus.off("update_customer_price_list");
+    this.eventBus.off("cart_items_updated");
+    this.eventBus.off("set_invoice_table");
+    this.eventBus.off("table_deselected");
+    this.eventBus.off("clear_invoice");
   },
 };
 </script>

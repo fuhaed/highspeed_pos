@@ -2,7 +2,9 @@
   <v-app class="container1">
     <Navbar @changePage="setPage($event)"></Navbar>
     <v-main style="height: 100vh; overflow: hidden;">
-      <component v-bind:is="page" class="px-2 pb-0" style="height: 100%; overflow: hidden;"></component>
+      <keep-alive>
+        <component v-bind:is="page" class="px-2 pb-0" style="height: 100%; overflow: hidden;"></component>
+      </keep-alive>
     </v-main>
   </v-app>
 </template>
@@ -11,6 +13,7 @@
 import Navbar from './components/Navbar.vue';
 import POS from './components/pos/Pos.vue';
 import Payments from './components/payments/Pay.vue';
+import Tables from './components/pos/PosTables.vue';
 
 export default {
   data: function () {
@@ -22,6 +25,7 @@ export default {
     Navbar,
     POS,
     Payments,
+    Tables,
   },
   methods: {
     setPage(page) {
@@ -42,6 +46,12 @@ export default {
     setTimeout(() => {
       this.remove_frappe_nav();
     }, 1000);
+    this.eventBus.on("show_tables", (data) => {
+      this.page = data === "true" ? "Tables" : "POS";
+    });
+  },
+  beforeUnmount() {
+    this.eventBus.off("show_tables");
   },
 };
 </script>

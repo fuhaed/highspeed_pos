@@ -38,6 +38,18 @@
           rounded="sm"
         ></v-list-item>
 
+        <!-- Tables Page Item -->
+        <v-list-item
+          v-if="pos_profile?.hspos_enable_dining_tables"
+          :active="currentPage === 'Tables'"
+          value="Tables"
+          @click="changePage('Tables')"
+          prepend-icon="mdi-table-chair"
+          :title="__('Tables')"
+          class="mb-2 sidebar-item"
+          rounded="sm"
+        ></v-list-item>
+
         <!-- Payments Page Item -->
         <v-list-item
           v-if="pos_profile?.hspos_use_highspeed_pos_payments"
@@ -882,6 +894,9 @@ export default {
       this.eventBus.on('set_last_invoice', (data) => {
         this.last_invoice = data;
         this.loadLastInvoices();
+      });
+      this.eventBus.on('show_tables', (data) => {
+        this.currentPage = data === 'true' ? 'Tables' : 'POS';
       });
       this.eventBus.on('freeze', (data) => {
         this.freeze = true;
