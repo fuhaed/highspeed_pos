@@ -2749,3 +2749,16 @@ def get_closing_shift_data(opening_shift):
 def submit_closing_shift(closing_shift):
     from highspeed_pos.highspeed_pos.doctype.hspos_closing_shift.hspos_closing_shift import submit_closing_shift as submit_shift
     return submit_shift(closing_shift)
+
+
+def after_migrate():
+    """
+    Automatically reloads the HIGHSPEED POS workspace to keep it fresh and update layout cards/links.
+    """
+    try:
+        workspace_name = "HIGHSPEED POS"
+        if frappe.db.exists("Workspace", workspace_name):
+            frappe.reload_doc("highspeed_pos", "workspace", "highspeed_pos", force=True)
+            frappe.db.commit()
+    except Exception as e:
+        frappe.log_error(f"Error reloading workspace in migration: {str(e)}", "HIGHSPEED POS Migration Hook")
