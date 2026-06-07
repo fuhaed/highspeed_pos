@@ -4,34 +4,41 @@
     <v-app-bar flat class="kds-navbar px-2 px-sm-4">
       <div class="d-flex align-center w-100">
         <!-- Logo & Title -->
-        <v-avatar color="rgba(255, 255, 255, 0.08)" size="36" class="me-2 brand-glow d-none d-sm-flex">
-          <v-icon color="#58a6ff" size="18">mdi-stove</v-icon>
-        </v-avatar>
-        <div>
-          <div class="kds-title font-weight-bold text-uppercase" style="font-size: 15px !important; letter-spacing: 1px;">
-            <span class="text-white font-weight-light">HSPOS</span>
-            <span class="text-primary font-weight-black ms-1">Kitchen</span>
+        <div class="d-flex align-center">
+          <v-avatar color="rgba(255, 255, 255, 0.08)" size="36" class="me-2 brand-glow d-none d-sm-flex">
+            <v-icon color="#58a6ff" size="18">mdi-stove</v-icon>
+          </v-avatar>
+          <div>
+            <div class="kds-title font-weight-bold text-uppercase" style="font-size: 15px !important; letter-spacing: 1px;">
+              <span class="text-white font-weight-light">HSPOS</span>
+              <span class="text-primary font-weight-black ms-1">Kitchen</span>
+            </div>
+            <span class="text-caption text-grey-darken-1 font-mono d-none d-md-inline" style="font-size: 9px !important;">Live KDS Control</span>
           </div>
-          <span class="text-caption text-grey-darken-1 font-mono d-none d-md-inline" style="font-size: 9px !important;">Live KDS Control</span>
         </div>
 
         <v-spacer></v-spacer>
 
-        <!-- Stats Counters (visible on sm and up) -->
-        <div class="d-none d-sm-flex gap-1.5 gap-md-2 me-2 me-md-6 align-center">
-          <v-chip color="error" variant="flat" class="font-weight-bold px-2 px-md-3" size="small">
-            <v-icon start size="14" class="me-1">mdi-clock-alert-outline</v-icon>
-            {{ pendingCount }} <span class="d-none d-md-inline ms-1">{{ __('Pending') }}</span>
+        <!-- Centered Stats Counters (visible only on large desktop screens to prevent crowding) -->
+        <div class="d-none d-lg-flex gap-2 align-center">
+          <v-chip color="error" variant="flat" class="font-weight-bold px-3" size="small">
+            <v-icon start size="14">mdi-clock-alert-outline</v-icon>
+            <span class="ms-1">{{ pendingCount }}</span>
+            <span class="d-none d-xl-inline ms-1">{{ __('Pending') }}</span>
           </v-chip>
-          <v-chip color="warning" variant="flat" class="font-weight-bold px-2 px-md-3" size="small">
-            <v-icon start size="14" class="me-1">mdi-fire</v-icon>
-            {{ preparingCount }} <span class="d-none d-md-inline ms-1">{{ __('Preparing') }}</span>
+          <v-chip color="warning" variant="flat" class="font-weight-bold px-3" size="small">
+            <v-icon start size="14">mdi-fire</v-icon>
+            <span class="ms-1">{{ preparingCount }}</span>
+            <span class="d-none d-xl-inline ms-1">{{ __('Preparing') }}</span>
           </v-chip>
-          <v-chip color="success" variant="flat" class="font-weight-bold px-2 px-md-3" size="small">
-            <v-icon start size="14" class="me-1">mdi-check-decagram-outline</v-icon>
-            {{ completedTodayCount }} <span class="d-none d-md-inline ms-1">{{ __('Done Today') }}</span>
+          <v-chip color="success" variant="flat" class="font-weight-bold px-3" size="small">
+            <v-icon start size="14">mdi-check-decagram-outline</v-icon>
+            <span class="ms-1">{{ completedTodayCount }}</span>
+            <span class="d-none d-xl-inline ms-1">{{ __('Done Today') }}</span>
           </v-chip>
         </div>
+
+        <v-spacer class="d-none d-lg-block"></v-spacer>
 
         <!-- System Time & Control buttons -->
         <div class="d-flex align-center gap-1 gap-sm-2">
@@ -78,8 +85,8 @@
             {{ currentLang === 'ar' ? 'EN' : 'عربي' }}
           </v-btn>
 
-          <!-- Desktop Utility Buttons (visible on md and up) -->
-          <div class="d-none d-md-flex align-center gap-1">
+          <!-- Desktop Utility Buttons (visible on lg and up) -->
+          <div class="d-none d-lg-flex align-center gap-1">
             <v-btn
               icon
               variant="text"
@@ -134,7 +141,7 @@
                 color="white"
                 v-bind="props"
                 size="small"
-                class="ms-1 d-md-none"
+                class="ms-1 d-lg-none"
               >
                 <v-icon>mdi-dots-vertical</v-icon>
               </v-btn>
@@ -213,13 +220,10 @@
                 <!-- Compact Card Header -->
                 <div class="pa-2 bg-glass-dark d-flex flex-column flex-grow-0 border-bottom-glass">
                   <div class="d-flex justify-space-between align-center">
-                    <div
-                      class="text-caption font-weight-bold font-mono px-1.5 py-0.5 rounded leading-none"
-                      :class="isOrderOverdue(order.creation) ? 'bg-red-glow text-white animate-pulse' : 'bg-grey-darken-4 text-grey-lighten-2'"
-                    >
-                      {{ getElapsedTime(order.creation) }}
-                    </div>
                     <div class="d-flex align-center gap-1-5">
+                      <span class="text-h6 font-weight-black text-white font-mono leading-none" style="font-size: 20px !important; text-shadow: 0 0 10px rgba(255,255,255,0.25);">
+                        #{{ order.hspos_order_no || order.name.slice(-5) }}
+                      </span>
                       <span
                         v-if="order.hspos_order_type"
                         class="order-type-badge font-weight-black"
@@ -227,9 +231,12 @@
                       >
                         {{ formatOrderType(order.hspos_order_type) }}
                       </span>
-                      <span class="text-h6 font-weight-black text-white font-mono leading-none" style="font-size: 20px !important; text-shadow: 0 0 10px rgba(255,255,255,0.25);">
-                        #{{ order.hspos_order_no || order.name.slice(-5) }}
-                      </span>
+                    </div>
+                    <div
+                      class="text-caption font-weight-bold font-mono px-1.5 py-0.5 rounded leading-none"
+                      :class="isOrderOverdue(order.creation) ? 'bg-red-glow text-white animate-pulse' : 'bg-grey-darken-4 text-grey-lighten-2'"
+                    >
+                      {{ getElapsedTime(order.creation) }}
                     </div>
                   </div>
                   <div class="d-flex justify-space-between align-center mt-1" style="font-size: 11px; line-height: 1.1;">
@@ -1145,7 +1152,7 @@ export default {
   border-radius: 8px !important;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   overflow: hidden;
-  min-height: 280px;
+  min-height: 200px;
   height: auto;
 }
 
@@ -1156,11 +1163,11 @@ export default {
 }
 
 .border-pending {
-  border-left: 6px solid #ff5252 !important;
+  border-inline-start: 6px solid #ff5252 !important;
 }
 
 .border-preparing {
-  border-left: 6px solid #fb8c00 !important;
+  border-inline-start: 6px solid #fb8c00 !important;
 }
 
 /* High urgency overdue orders blink and shake slightly */
