@@ -72,6 +72,7 @@ doctype_js = {
 # after_install = "highspeed_pos.install.after_install"
 # before_uninstall = "highspeed_pos.uninstall.before_uninstall"
 after_uninstall = "highspeed_pos.uninstall.after_uninstall"
+before_migrate = "highspeed_pos.highspeed_pos.api.hsposapp.before_migrate"
 after_migrate = "highspeed_pos.highspeed_pos.api.hsposapp.after_migrate"
 
 # Desk Notifications

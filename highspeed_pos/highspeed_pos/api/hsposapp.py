@@ -2751,6 +2751,27 @@ def submit_closing_shift(closing_shift):
     return submit_shift(closing_shift)
 
 
+def before_migrate():
+    """
+    Runs before migration to clean up standard dashboard charts and workspaces in database,
+    preventing validation errors ('Cannot edit Standard charts') during fixture sync.
+    """
+    try:
+        # Delete standard dashboard chart if it exists, to allow fresh import
+        chart_name = "HSPOS Daily Sales Trend"
+        if frappe.db.exists("Dashboard Chart", chart_name):
+            frappe.delete_doc("Dashboard Chart", chart_name, ignore_permissions=True, force=True)
+            frappe.db.commit()
+            
+        # Delete workspace to prevent merge conflicts/row mismatches
+        workspace_name = "HIGHSPEED POS"
+        if frappe.db.exists("Workspace", workspace_name):
+            frappe.delete_doc("Workspace", workspace_name, ignore_permissions=True, force=True)
+            frappe.db.commit()
+    except Exception as e:
+        frappe.log_error(f"Error in before_migrate for HIGHSPEED POS: {str(e)}", "HIGHSPEED POS Migration Hook")
+
+
 def after_migrate():
     """
     Automatically resets and reloads the HIGHSPEED POS workspace from code,
