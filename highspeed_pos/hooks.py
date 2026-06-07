@@ -219,16 +219,4 @@ fixtures = [
         "doctype": "Property Setter",
         "filters": [["name", "in", ("Sales Invoice-hspos_hspos_opening_shift-no_copy", "HSPOS Closing Shift-main-default_print_format")]],
     },
-    {
-        "doctype": "Number Card",
-        "filters": [["module", "=", "highspeed_pos"]]
-    },
-    {
-        "doctype": "Dashboard Chart",
-        "filters": [["module", "=", "highspeed_pos"]]
-    },
-    {
-        "doctype": "Workspace",
-        "filters": [["name", "=", "HIGHSPEED POS"]]
-    }
 ]
