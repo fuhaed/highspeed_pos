@@ -32,8 +32,8 @@
                     :items-per-page-text="__('Items per page:')"
                   >
                     <template v-slot:item.customer_name="{ item }">
-                      <div class="customer-cell d-flex align-center py-2" :class="{ 'flex-row-reverse': isRTL }">
-                        <v-avatar size="32" color="primary" :class="isRTL ? 'ms-2' : 'me-2'">
+                      <div class="customer-cell d-flex align-center py-2">
+                        <v-avatar size="32" color="primary" class="me-3">
                           <span class="text-caption text-white">
                             {{ getInitials(item.customer_name) }}
                           </span>
@@ -46,21 +46,28 @@
                     </template>
 
                     <template v-slot:item.posting_date="{ item }">
-                      <div class="date-cell d-flex align-center text-slate-700" :class="{ 'flex-row-reverse': isRTL }">
-                        <v-icon size="16" :class="isRTL ? 'ml-1' : 'mr-1'" class="text-slate-400">mdi-calendar</v-icon>
+                      <div class="date-cell d-flex align-center text-slate-700">
+                        <v-icon size="16" class="text-slate-400 me-2">mdi-calendar</v-icon>
                         <span>{{ item.posting_date }}</span>
                       </div>
                     </template>
 
                     <template v-slot:item.posting_time="{ item }">
-                      <div class="time-cell d-flex align-center text-slate-700" :class="{ 'flex-row-reverse': isRTL }">
-                        <v-icon size="16" :class="isRTL ? 'ml-1' : 'mr-1'" class="text-slate-400">mdi-clock-outline</v-icon>
+                      <div class="time-cell d-flex align-center text-slate-700">
+                        <v-icon size="16" class="text-slate-400 me-2">mdi-clock-outline</v-icon>
                         <span>{{ item.posting_time.split('.')[0] }}</span>
                       </div>
                     </template>
 
+                    <template v-slot:item.hspos_table="{ item }">
+                      <div class="table-cell d-flex align-center text-slate-700">
+                        <v-icon size="16" class="text-slate-400 me-2">mdi-table-chair</v-icon>
+                        <span>{{ item.hspos_table || '-' }}</span>
+                      </div>
+                    </template>
+
                     <template v-slot:item.grand_total="{ item }">
-                      <div class="amount-cell d-flex align-baseline font-weight-bold" :style="{ justifyContent: isRTL ? 'flex-start' : 'flex-end' }">
+                      <div class="amount-cell d-flex align-baseline font-weight-bold justify-end">
                         <span class="currency text-caption text-slate-500 me-1">{{ currencySymbol(item.currency) }}</span>
                         <span class="amount text-primary">{{ formatCurrency(item.grand_total) }}</span>
                       </div>
@@ -137,6 +144,12 @@ export default {
       {
         title: __('Invoice'),
         value: 'name',
+        align: 'start',
+        sortable: true,
+      },
+      {
+        title: __('Table'),
+        value: 'hspos_table',
         align: 'start',
         sortable: true,
       },

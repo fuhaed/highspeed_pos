@@ -1919,6 +1919,7 @@ export default {
         method: "highspeed_pos.highspeed_pos.api.hsposapp.get_draft_invoices",
         args: {
           hspos_opening_shift: this.hspos_opening_shift.name,
+          pos_profile: this.pos_profile.name,
         },
         async: false,
         callback: function (r) {

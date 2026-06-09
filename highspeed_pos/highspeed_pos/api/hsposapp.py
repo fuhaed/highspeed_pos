@@ -1138,15 +1138,23 @@ def get_available_credit(customer, company):
 
 
 @frappe.whitelist()
-def get_draft_invoices(hspos_opening_shift=None, pos_opening_shift=None, **kwargs):
+def get_draft_invoices(hspos_opening_shift=None, pos_opening_shift=None, pos_profile=None, **kwargs):
     shift = hspos_opening_shift or pos_opening_shift
+    if not pos_profile and shift:
+        pos_profile = frappe.db.get_value("HSPOS Opening Shift", shift, "pos_profile")
+        
+    filters = {
+        "docstatus": 0,
+    }
+    
+    if pos_profile:
+        filters["pos_profile"] = pos_profile
+    elif shift:
+        filters["hspos_hspos_opening_shift"] = shift
+        
     invoices_list = frappe.get_list(
         "Sales Invoice",
-        filters={
-            "hspos_hspos_opening_shift": shift,
-            "docstatus": 0,
-            "hspos_is_printed": 0,
-        },
+        filters=filters,
         fields=["name"],
         limit_page_length=0,
         order_by="modified desc",
