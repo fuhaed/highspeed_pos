@@ -85,6 +85,13 @@
                 
                 <div class="table-name font-weight-bold mb-1 text-truncate">{{ table.table_name }}</div>
                 
+                <!-- Draft Badge -->
+                <div v-if="table.draft_name" class="mb-2">
+                  <span class="text-caption font-weight-bold px-1.5 py-0.5 rounded text-white" style="font-size: 10px !important; background-color: #fb8c00 !important; box-shadow: 0 0 5px rgba(251,140,0,0.3);">
+                    {{ isRTL ? 'مسودة' : 'Draft' }}
+                  </span>
+                </div>
+                
                 <div class="table-meta d-flex justify-space-between align-center px-1">
                   <span class="capacity-text">
                     <v-icon size="12" class="me-1">mdi-account-group</v-icon>
@@ -167,7 +174,36 @@ export default {
         },
         callback: (r) => {
           if (r.message) {
-            this.tables = r.message;
+            const tablesList = r.message;
+            // Fetch active draft invoices with tables for this profile
+            frappe.call({
+              method: "frappe.client.get_list",
+              args: {
+                doctype: "Sales Invoice",
+                fields: ["name", "hspos_table"],
+                filters: {
+                  docstatus: 0,
+                  pos_profile: this.pos_profile_name || "",
+                  hspos_table: ["!=", ""]
+                },
+                limit: 100
+              },
+              callback: (res) => {
+                const drafts = res.message || [];
+                const draftMap = {};
+                drafts.forEach(d => {
+                  if (d.hspos_table) {
+                    draftMap[d.hspos_table] = d.name;
+                  }
+                });
+                
+                tablesList.forEach(t => {
+                  t.draft_name = draftMap[t.table_name] || draftMap[t.name] || "";
+                });
+                
+                this.tables = tablesList;
+              }
+            });
           }
         }
       });
@@ -181,9 +217,26 @@ export default {
             this.updateTableStatus(table.name, "Available");
           },
           () => {
-            this.selectedTable = table.name;
-            this.eventBus.emit("set_invoice_table", table.table_name);
-            this.backToInvoice();
+            if (table.draft_name) {
+              // Load the active draft invoice for this table
+              frappe.call({
+                method: "frappe.client.get",
+                args: {
+                  doctype: "Sales Invoice",
+                  name: table.draft_name
+                },
+                callback: (res) => {
+                  if (res.message) {
+                    this.eventBus.emit("load_invoice", res.message);
+                    this.backToInvoice();
+                  }
+                }
+              });
+            } else {
+              this.selectedTable = table.name;
+              this.eventBus.emit("set_invoice_table", table.table_name);
+              this.backToInvoice();
+            }
           }
         );
         return;
