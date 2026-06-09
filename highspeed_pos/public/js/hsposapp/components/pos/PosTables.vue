@@ -159,52 +159,58 @@ export default {
 
   methods: {
     fetchTables() {
-      const filters = [];
-      if (this.pos_profile_name) {
-        filters.push(["POS Table", "pos_profile", "in", [this.pos_profile_name, "", null]]);
-      }
-
+      // First, trigger automatic release of any tables exceeded 1.5 hours in the database
       frappe.call({
-        method: "frappe.client.get_list",
-        args: {
-          doctype: "POS Table",
-          fields: ["name", "table_name", "status", "capacity", "pos_profile"],
-          filters: filters,
-          limit: 100
-        },
-        callback: (r) => {
-          if (r.message) {
-            const tablesList = r.message;
-            // Fetch active draft invoices with tables for this profile
-            frappe.call({
-              method: "frappe.client.get_list",
-              args: {
-                doctype: "Sales Invoice",
-                fields: ["name", "hspos_table"],
-                filters: {
-                  docstatus: 0,
-                  pos_profile: this.pos_profile_name || "",
-                  hspos_table: ["!=", ""]
-                },
-                limit: 100
-              },
-              callback: (res) => {
-                const drafts = res.message || [];
-                const draftMap = {};
-                drafts.forEach(d => {
-                  if (d.hspos_table) {
-                    draftMap[d.hspos_table] = d.name;
+        method: "highspeed_pos.highspeed_pos.api.hsposapp.auto_release_expired_tables",
+        callback: () => {
+          const filters = [];
+          if (this.pos_profile_name) {
+            filters.push(["POS Table", "pos_profile", "in", [this.pos_profile_name, "", null]]);
+          }
+
+          frappe.call({
+            method: "frappe.client.get_list",
+            args: {
+              doctype: "POS Table",
+              fields: ["name", "table_name", "status", "capacity", "pos_profile"],
+              filters: filters,
+              limit: 100
+            },
+            callback: (r) => {
+              if (r.message) {
+                const tablesList = r.message;
+                // Fetch active draft invoices with tables for this profile
+                frappe.call({
+                  method: "frappe.client.get_list",
+                  args: {
+                    doctype: "Sales Invoice",
+                    fields: ["name", "hspos_table"],
+                    filters: {
+                      docstatus: 0,
+                      pos_profile: this.pos_profile_name || "",
+                      hspos_table: ["!=", ""]
+                    },
+                    limit: 100
+                  },
+                  callback: (res) => {
+                    const drafts = res.message || [];
+                    const draftMap = {};
+                    drafts.forEach(d => {
+                      if (d.hspos_table) {
+                        draftMap[d.hspos_table] = d.name;
+                      }
+                    });
+                    
+                    tablesList.forEach(t => {
+                      t.draft_name = draftMap[t.table_name] || draftMap[t.name] || "";
+                    });
+                    
+                    this.tables = tablesList;
                   }
                 });
-                
-                tablesList.forEach(t => {
-                  t.draft_name = draftMap[t.table_name] || draftMap[t.name] || "";
-                });
-                
-                this.tables = tablesList;
               }
-            });
-          }
+            }
+          });
         }
       });
     },

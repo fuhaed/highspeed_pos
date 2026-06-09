@@ -115,6 +115,9 @@ doc_events = {
 scheduler_events = {
     "daily": [
         "highspeed_pos.highspeed_pos.api.hsposapp.reset_daily_order_numbers"
+    ],
+    "all": [
+        "highspeed_pos.highspeed_pos.api.hsposapp.auto_release_expired_tables"
     ]
 }
 

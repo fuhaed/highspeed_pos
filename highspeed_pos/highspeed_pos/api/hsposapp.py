@@ -2796,3 +2796,33 @@ def after_migrate():
         frappe.db.commit()
     except Exception as e:
         frappe.log_error(f"Error resetting workspace in migration: {str(e)}", "HIGHSPEED POS Migration Hook")
+
+
+@frappe.whitelist()
+def auto_release_expired_tables():
+    """
+    Automatically releases table reservations (sets status to Available) 
+    if the table has been Occupied or Reserved for more than 1.5 hours (90 minutes).
+    """
+    from frappe.utils import add_to_date, now_datetime
+    
+    # Calculate 1.5 hours ago (90 minutes)
+    expired_time = add_to_date(now_datetime(), minutes=-90)
+    
+    # Query tables updated/modified before 90 minutes ago
+    expired_tables = frappe.get_all(
+        "POS Table",
+        filters={
+            "status": ["in", ["Occupied", "Reserved"]],
+            "modified": ["<", expired_time]
+        },
+        fields=["name", "status", "modified"]
+    )
+    
+    for table in expired_tables:
+        frappe.db.set_value("POS Table", table.name, "status", "Available")
+        
+    if expired_tables:
+        frappe.db.commit()
+        
+    return {"released_count": len(expired_tables)}
