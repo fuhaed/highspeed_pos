@@ -233,7 +233,7 @@
                         class="order-type-badge font-weight-black"
                         :class="getOrderTypeClass(order.hspos_order_type)"
                       >
-                        {{ formatOrderType(order.hspos_order_type) }}<span v-if="order.hspos_table"> ({{ order.hspos_table }})</span><span v-if="order.docstatus === 0" style="color: #ffb300; margin-left: 4px;"> (مسودة)</span>
+                        {{ formatOrderType(order.hspos_order_type) }}<span v-if="order.hspos_table"> ({{ order.hspos_table }})</span>
                       </span>
                     </div>
 
@@ -246,6 +246,12 @@
                       >
                         {{ getElapsedTime(order.creation) }}
                       </div>
+                    </div>
+                  </div>
+                  <!-- Draft Warning Banner -->
+                  <div v-if="order.docstatus === 0" class="d-flex justify-center my-1 w-100">
+                    <div class="w-100 text-center font-weight-black text-white px-2 py-1 rounded animate-pulse" style="font-size: 13px; background: rgba(239, 83, 80, 0.25) !important; border: 1px solid #ef5350; letter-spacing: 0.5px; text-shadow: 0 0 5px rgba(255,255,255,0.2);">
+                      ⚠️ مسودة - لم يتم الدفع
                     </div>
                   </div>
                   <div class="d-flex justify-space-between align-center mt-1" style="font-size: 11px; line-height: 1.1;">
