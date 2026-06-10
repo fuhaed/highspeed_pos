@@ -479,7 +479,7 @@ export default {
     show_message(data) {
       this.snack = true;
       this.snackColor = data.color;
-      this.snackText = data.title;
+      this.snackText = data.text || data.title;
     },
     
     logOut() {

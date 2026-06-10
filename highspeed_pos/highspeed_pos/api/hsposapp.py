@@ -218,6 +218,7 @@ def get_items(
         search_serial_no = pos_profile.get("hspos_search_serial_no")
         search_batch_no = pos_profile.get("hspos_search_batch_no")
         hspos_show_template_items = pos_profile.get("hspos_show_template_items")
+        hspos_hide_variants_items = pos_profile.get("hspos_hide_variants_items")
         hspos_display_items_in_stock = pos_profile.get("hspos_display_items_in_stock")
         search_limit = 0
 
@@ -252,6 +253,9 @@ def get_items(
 
         if not hspos_show_template_items:
             condition += " AND has_variants = 0"
+
+        if hspos_hide_variants_items:
+            condition += " AND (variant_of IS NULL OR variant_of = '')"
 
         result = []
 
@@ -2839,6 +2843,7 @@ def auto_release_expired_tables():
 def on_invoice_update(doc, method=None):
     """
     Triggers when a Sales Invoice is updated. Broadcasts real-time events to KDS.
+    Also automatically reserves the associated table if it is a draft invoice.
     """
     frappe.publish_realtime(
         "hspos_kitchen_update",
@@ -2846,6 +2851,78 @@ def on_invoice_update(doc, method=None):
             "name": doc.name,
             "status": doc.status,
             "hspos_kitchen_status": doc.get("hspos_kitchen_status"),
+            "pos_profile": doc.get("pos_profile")
+        },
+        after_commit=True
+    )
+
+    # 1. Manage Table swap / clear
+    old_doc = doc.get_doc_before_save()
+    old_table = old_doc.get("hspos_table") if old_doc else None
+    new_table = doc.get("hspos_table")
+
+    if old_table and old_table != new_table:
+        # Table was cleared or swapped! Release the old table if no other drafts use it
+        other_drafts = frappe.db.exists("Sales Invoice", {"docstatus": 0, "hspos_table": old_table, "name": ["!=", doc.name]})
+        if not other_drafts:
+            frappe.db.set_value("POS Table", old_table, "status", "Available")
+            frappe.db.commit()
+            
+            frappe.publish_realtime(
+                "hspos_table_update",
+                {
+                    "name": old_table,
+                    "status": "Available",
+                    "pos_profile": doc.get("pos_profile")
+                },
+                after_commit=True
+            )
+
+    # 2. Reserve new table if doc is draft
+    if doc.docstatus == 0 and new_table:
+        current_status = frappe.db.get_value("POS Table", new_table, "status")
+        if current_status != "Occupied":
+            frappe.db.set_value("POS Table", new_table, "status", "Occupied")
+            frappe.db.commit()
+            
+            frappe.publish_realtime(
+                "hspos_table_update",
+                {
+                    "name": new_table,
+                    "status": "Occupied",
+                    "pos_profile": doc.get("pos_profile")
+                },
+                after_commit=True
+            )
+
+
+def on_invoice_trash(doc, method=None):
+    """
+    Triggers when a Sales Invoice is deleted (trashed).
+    Frees the associated table if it is no longer referenced by other drafts.
+    """
+    if doc.get("hspos_table"):
+        table_name = doc.get("hspos_table")
+        other_drafts = frappe.db.exists("Sales Invoice", {"docstatus": 0, "hspos_table": table_name, "name": ["!=", doc.name]})
+        if not other_drafts:
+            frappe.db.set_value("POS Table", table_name, "status", "Available")
+            frappe.db.commit()
+            
+            frappe.publish_realtime(
+                "hspos_table_update",
+                {
+                    "name": table_name,
+                    "status": "Available",
+                    "pos_profile": doc.get("pos_profile")
+                },
+                after_commit=True
+            )
+            
+    frappe.publish_realtime(
+        "hspos_kitchen_update",
+        {
+            "name": doc.name,
+            "status": "Deleted",
             "pos_profile": doc.get("pos_profile")
         },
         after_commit=True

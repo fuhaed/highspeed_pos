@@ -685,6 +685,10 @@ export default {
     this.navInterval = setInterval(() => {
       this.remove_frappe_nav();
     }, 1000);
+
+    if (typeof frappe !== 'undefined' && frappe.realtime) {
+      frappe.realtime.on("hspos_kitchen_update", this.handleKitchenUpdate);
+    }
   },
 
   unmounted() {
@@ -693,9 +697,17 @@ export default {
     if (this.navInterval) clearInterval(this.navInterval);
     document.removeEventListener('fullscreenchange', this.detectFullscreen);
     this.restore_frappe_nav();
+
+    if (typeof frappe !== 'undefined' && frappe.realtime) {
+      frappe.realtime.off("hspos_kitchen_update", this.handleKitchenUpdate);
+    }
   },
 
   methods: {
+    handleKitchenUpdate(data) {
+      this.fetchOrders(false);
+    },
+
     __(text) {
       if (translations[this.currentLang] && translations[this.currentLang][text]) {
         return translations[this.currentLang][text];

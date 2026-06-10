@@ -275,6 +275,10 @@ export default {
     getStatusClass(table) {
       return `status-${table.status.toLowerCase()}`;
     },
+
+    handleTableUpdate(data) {
+      this.fetchTables();
+    },
   },
 
   created() {
@@ -297,6 +301,10 @@ export default {
     }
 
     this.fetchTables();
+
+    if (typeof frappe !== 'undefined' && frappe.realtime) {
+      frappe.realtime.on("hspos_table_update", this.handleTableUpdate);
+    }
 
     this.eventBus.on("set_invoice_table", (table) => {
       this.selectedTable = table || "";
@@ -329,6 +337,10 @@ export default {
     this.eventBus.off("table_deselected");
     this.eventBus.off("clear_invoice");
     this.eventBus.off("register_pos_profile");
+
+    if (typeof frappe !== 'undefined' && frappe.realtime) {
+      frappe.realtime.off("hspos_table_update", this.handleTableUpdate);
+    }
   }
 };
 </script>

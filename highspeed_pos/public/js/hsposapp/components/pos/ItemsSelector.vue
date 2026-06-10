@@ -454,7 +454,17 @@ export default {
 
     filtered_items() {
       this.search = this.get_search(this.first_search);
-      let result = this.items;
+      let result = this.items || [];
+
+      // Filter templates if show template items is unchecked
+      if (this.pos_profile && !this.pos_profile.hspos_show_template_items) {
+        result = result.filter(item => !item.has_variants);
+      }
+
+      // Filter variants if hide variants items is checked
+      if (this.pos_profile && this.pos_profile.hspos_hide_variants_items) {
+        result = result.filter(item => !item.variant_of);
+      }
 
       if (this.item_group !== "ALL") {
         result = result.filter(item => 
@@ -712,7 +722,7 @@ export default {
       
       item = { ...item };
       
-      if (item.has_variants === 1 || item.has_variants === true) {
+      if (item.has_variants && (item.has_variants == 1 || item.has_variants === true || String(item.has_variants) === '1' || item.has_variants === 'true')) {
         if (!this.eventBus) {
           console.error('EventBus not available');
           return;
@@ -724,7 +734,7 @@ export default {
         }
         
         try {
-          this.eventBus.emit("open_variants_model", item, this.items);
+          this.eventBus.emit("open_variants_model", { item: item, items: this.items });
           this.clearSearch();
         } catch (error) {
           console.error('Error opening variants dialog:', error);

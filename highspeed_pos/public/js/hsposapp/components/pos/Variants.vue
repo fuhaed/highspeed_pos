@@ -1,10 +1,10 @@
 <template>
   <v-row justify="center">
-    <v-dialog v-model="varaintsDialog" max-width="900px" :dir="isRTL ? 'rtl' : 'ltr'">
+    <v-dialog v-model="varaintsDialog" max-width="700px" width="100%" scrollable :dir="isRTL ? 'rtl' : 'ltr'">
       <v-card class="variants-card">
         <v-card-title class="dialog-header">
           <div class="header-content">
-            <v-icon size="28" color="primary" class="header-icon">mdi-shape-plus</v-icon>
+            <v-icon size="24" color="white" class="header-icon">mdi-shape-plus</v-icon>
             <span class="dialog-title">{{ parentItem ? parentItem.item_name : __('Select Item') }}</span>
           </div>
           <v-spacer></v-spacer>
@@ -20,44 +20,47 @@
         
         <v-divider></v-divider>
         
-        <v-card-text class="pa-0">
+        <v-card-text class="pa-0 scrollable-content">
           <v-container v-if="parentItem" class="variants-container">
             <!-- Attributes Section -->
             <div class="attributes-section" v-if="parentItem.attributes && parentItem.attributes.length">
-              <div 
-                v-for="(attr, index) in parentItem.attributes" 
-                :key="attr.attribute"
-                class="attribute-group"
-                :class="{ 'last-group': index === parentItem.attributes.length - 1 }"
-              >
-                <div class="attribute-header">
-                  <v-icon size="20" color="grey-darken-1" class="attribute-icon">
-                    {{ getAttributeIcon(attr.attribute) }}
-                  </v-icon>
-                  <span class="attribute-name">{{ attr.attribute }}</span>
-                </div>
-                
-                <v-chip-group 
-                  v-model="filters[attr.attribute]" 
-                  selected-class="chip-selected"
-                  class="attribute-chips"
+              <v-row class="ma-0 pa-0">
+                <v-col 
+                  v-for="(attr, index) in parentItem.attributes" 
+                  :key="attr.attribute"
+                  cols="6"
+                  class="pa-2"
                 >
-                  <v-chip 
-                    v-for="value in attr.values" 
-                    :key="value.abbr || value.attribute_value" 
-                    :value="value.attribute_value"
-                    variant="outlined"
-                    label
-                    class="attribute-chip"
-                    @click="updateFiltredItems"
-                  >
-                    <v-icon size="16" start v-if="filters[attr.attribute] === value.attribute_value">
-                      mdi-check
+                  <div class="attribute-header">
+                    <v-icon size="14" class="attribute-icon">
+                      {{ getAttributeIcon(attr.attribute) }}
                     </v-icon>
-                    {{ value.attribute_value }}
-                  </v-chip>
-                </v-chip-group>
-              </div>
+                    <span class="attribute-name">{{ attr.attribute }}</span>
+                  </div>
+                  
+                  <v-chip-group 
+                    v-model="filters[attr.attribute]" 
+                    selected-class="chip-selected"
+                    class="attribute-chips"
+                    column
+                  >
+                    <v-chip 
+                      v-for="value in attr.values" 
+                      :key="value.abbr || value.attribute_value" 
+                      :value="value.attribute_value"
+                      variant="outlined"
+                      label
+                      class="attribute-chip"
+                      @click="updateFiltredItems"
+                    >
+                      <v-icon size="16" start v-if="filters[attr.attribute] === value.attribute_value">
+                        mdi-check
+                      </v-icon>
+                      {{ value.attribute_value }}
+                    </v-chip>
+                  </v-chip-group>
+                </v-col>
+              </v-row>
             </div>
 
             <!-- Results Count -->
@@ -73,23 +76,25 @@
                 <v-col 
                   v-for="(item, idx) in filterdItems" 
                   :key="idx" 
-                  xl="2" 
+                  xl="3" 
                   lg="3" 
-                  md="4" 
-                  sm="6" 
-                  cols="12"
+                  md="3" 
+                  sm="4" 
+                  cols="6"
                 >
                   <v-card 
                     class="variant-item-card"
+                    :class="{ 'no-image': !item.image }"
                     hover
                     @click.stop="add_item(item)"
                   >
-                    <div class="item-image-wrapper">
+                    <!-- Render image wrapper ONLY if item has image -->
+                    <div v-if="item.image" class="item-image-wrapper">
                       <v-img 
-                        :src="item.image || '/assets/highspeed_pos/js/hsposapp/components/pos/placeholder-image.png'"
+                        :src="item.image"
                         class="item-image"
                         cover
-                        height="140"
+                        height="100"
                       >
                         <template v-slot:placeholder>
                           <v-row class="fill-height ma-0" align="center" justify="center">
@@ -101,25 +106,54 @@
                       <!-- Stock Badge -->
                       <v-chip 
                         v-if="item.actual_qty !== undefined"
-                        size="small"
+                        size="x-small"
                         :color="getStockColor(item.actual_qty)"
                         class="stock-badge"
                       >
-                        <v-icon size="14" start>mdi-package-variant</v-icon>
+                        <v-icon size="12" start>mdi-package-variant</v-icon>
                         {{ formatStock(item.actual_qty) }}
                       </v-chip>
                     </div>
                     
-                    <v-card-text class="item-details">
-                      <div class="item-name">{{ item.item_name }}</div>
-                      <div class="item-code">{{ item.item_code }}</div>
-                      
-                      <div class="item-footer">
-                        <div class="item-price">
-                          <span class="currency">{{ item.currency || 'SAR' }}</span>
-                          <span class="price">{{ formatCurrency(item.rate || 0) }}</span>
+                    <v-card-text class="item-details d-flex flex-column justify-space-between fill-height pa-3">
+                      <div>
+                        <div class="d-flex justify-space-between align-start mb-1">
+                          <div class="item-name font-weight-bold" :title="item.item_name">{{ item.item_name }}</div>
+                          <!-- Stock badge inline for cards without images -->
+                          <v-chip 
+                            v-if="!item.image && item.actual_qty !== undefined"
+                            size="x-small"
+                            :color="getStockColor(item.actual_qty)"
+                            variant="tonal"
+                            class="stock-badge-inline"
+                          >
+                            <v-icon size="10" start>mdi-package-variant</v-icon>
+                            {{ formatStock(item.actual_qty) }}
+                          </v-chip>
                         </div>
-                        <v-chip size="x-small" variant="tonal" color="grey">
+                        <div class="item-code text-caption text-grey">{{ item.item_code }}</div>
+                        
+                        <!-- Attribute pills -->
+                        <div v-if="item.item_attributes && item.item_attributes.length" class="card-attributes mt-1 mb-2">
+                          <v-chip
+                            v-for="attr in item.item_attributes"
+                            :key="attr.attribute"
+                            size="x-small"
+                            color="secondary"
+                            variant="tonal"
+                            class="attribute-pill"
+                          >
+                            {{ attr.attribute_value }}
+                          </v-chip>
+                        </div>
+                      </div>
+                      
+                      <div class="item-footer d-flex justify-space-between align-center mt-2">
+                        <div class="item-price">
+                          <span class="price text-primary font-weight-bold">{{ formatCurrency(item.rate || 0) }}</span>
+                          <span class="currency text-caption text-grey ms-1">{{ item.currency || 'SAR' }}</span>
+                        </div>
+                        <v-chip size="x-small" variant="outlined" color="grey">
                           {{ item.stock_uom || 'Unit' }}
                         </v-chip>
                       </div>
@@ -132,30 +166,33 @@
               <div v-else-if="parentItem.has_variants" class="single-item-state">
                 <v-card 
                   class="variant-item-card mx-auto"
+                  :class="{ 'no-image': !parentItem.image }"
                   hover
                   @click.stop="add_item(parentItem)"
                   style="max-width: 300px;"
                 >
-                  <div class="item-image-wrapper">
+                  <div v-if="parentItem.image" class="item-image-wrapper">
                     <v-img 
-                      :src="parentItem.image || '/assets/highspeed_pos/js/hsposapp/components/pos/placeholder-image.png'"
+                      :src="parentItem.image"
                       class="item-image"
                       cover
-                      height="140"
+                      height="100"
                     >
                     </v-img>
                   </div>
                   
-                  <v-card-text class="item-details">
-                    <div class="item-name">{{ parentItem.item_name }}</div>
-                    <div class="item-code">{{ parentItem.item_code }}</div>
+                  <v-card-text class="item-details d-flex flex-column justify-space-between fill-height pa-3">
+                    <div>
+                      <div class="item-name font-weight-bold">{{ parentItem.item_name }}</div>
+                      <div class="item-code text-caption text-grey">{{ parentItem.item_code }}</div>
+                    </div>
                     
-                    <div class="item-footer">
+                    <div class="item-footer d-flex justify-space-between align-center mt-2">
                       <div class="item-price">
-                        <span class="currency">{{ parentItem.currency || 'SAR' }}</span>
-                        <span class="price">{{ formatCurrency(parentItem.rate || 0) }}</span>
+                        <span class="price text-primary font-weight-bold">{{ formatCurrency(parentItem.rate || 0) }}</span>
+                        <span class="currency text-caption text-grey ms-1">{{ parentItem.currency || 'SAR' }}</span>
                       </div>
-                      <v-chip size="x-small" variant="tonal" color="grey">
+                      <v-chip size="x-small" variant="outlined" color="grey">
                         {{ parentItem.stock_uom || 'Unit' }}
                       </v-chip>
                     </div>
@@ -364,14 +401,15 @@ export default {
   created: function () {
     this.detectRTL();
     
-    this.eventBus.on('open_variants_model', (item, items) => {
+    this.eventBus.on('open_variants_model', (data) => {
+      const { item, items } = data || {};
       console.log('Opening variants dialog for:', item);
       console.log('Available items:', items);
-      console.log('Item has_variants:', item.has_variants);
+      console.log('Item has_variants:', item ? item.has_variants : undefined);
       
       this.varaintsDialog = true;
       this.parentItem = item || null;
-      this.items = items;
+      this.items = items || [];
       this.filters = {};
       
       this.$nextTick(() => {
@@ -389,7 +427,7 @@ export default {
             console.warn('No variants found. Checking data structure...');
             
             // Try finding variants another way
-            if (item.variants && Array.isArray(item.variants)) {
+            if (item && item.variants && Array.isArray(item.variants)) {
               this.filterdItems = item.variants;
             }
           }
@@ -409,14 +447,21 @@ export default {
 
 <style scoped>
 .variants-card {
-  border-radius: 12px !important;
+  border-radius: 16px !important;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
 }
 
 .dialog-header {
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  padding: 20px 24px;
-  border-bottom: 1px solid #e0e0e0;
+  background: linear-gradient(135deg, #075294 0%, #0097A7 100%) !important;
+  color: white !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px !important;
+  border-bottom: none;
 }
 
 .header-content {
@@ -426,88 +471,91 @@ export default {
 }
 
 .header-icon {
-  background: white;
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 8px;
   padding: 4px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  color: white !important;
 }
 
 .dialog-title {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: 600;
-  color: #212121;
+  color: white !important;
 }
 
 .close-btn {
   transition: transform 0.2s;
+  color: white !important;
 }
 
 .close-btn:hover {
   transform: rotate(90deg);
 }
 
+.scrollable-content {
+  overflow-y: auto;
+  flex: 1;
+}
+
 .variants-container {
   padding: 0 !important;
-  max-height: 70vh;
-  overflow-y: auto;
 }
 
 /* Attributes Section */
 .attributes-section {
-  background: #fafafa;
-  padding: 20px;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.attribute-group {
-  margin-bottom: 20px;
-}
-
-.attribute-group.last-group {
-  margin-bottom: 0;
+  background: #f8fafc;
+  padding: 8px 16px;
+  border-bottom: 1px solid #f1f5f9;
 }
 
 .attribute-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
+  gap: 6px;
+  margin-bottom: 4px;
 }
 
 .attribute-icon {
-  opacity: 0.7;
+  opacity: 0.8;
+  color: #64748b !important;
 }
 
 .attribute-name {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #616161;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #475569;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .attribute-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  margin-top: 4px;
 }
 
 .attribute-chip {
-  border-radius: 8px !important;
-  font-size: 0.875rem;
-  transition: all 0.2s;
-  border-width: 2px !important;
+  border-radius: 6px !important;
+  font-size: 0.825rem !important;
+  font-weight: 500;
+  color: #475569 !important;
+  border: 1px solid #cbd5e1 !important;
+  background-color: #ffffff !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 6px 14px !important;
+  height: 32px !important;
 }
 
 .attribute-chip:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  border-color: #0097A7 !important;
+  color: #0097A7 !important;
+  background-color: #f0fdfa !important;
+  transform: translateY(-1px);
 }
 
 .chip-selected {
-  background: #1976d2 !important;
+  background: linear-gradient(135deg, #075294 0%, #0097A7 100%) !important;
   color: white !important;
-  border-color: #1976d2 !important;
+  border-color: transparent !important;
+  box-shadow: 0 4px 10px rgba(0, 151, 167, 0.25) !important;
 }
 
 /* Results Info */
@@ -515,37 +563,46 @@ export default {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 20px;
-  background: #f5f5f5;
-  border-bottom: 1px solid #e0e0e0;
-  font-size: 0.875rem;
-  color: #616161;
+  padding: 8px 16px;
+  background: #f1f5f9;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
 }
 
 /* Items Section */
 .items-section {
-  padding: 20px;
-  min-height: 300px;
+  padding: 8px 12px;
+  min-height: 200px;
 }
 
 .items-grid {
-  margin: -8px;
+  margin: -4px;
+}
+
+.items-grid > .v-col {
+  padding: 4px !important;
 }
 
 .variant-item-card {
-  border-radius: 12px !important;
+  border-radius: 8px !important;
   overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
   height: 100%;
   display: flex;
   flex-direction: column;
   user-select: none;
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03) !important;
 }
 
 .variant-item-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  transform: translateY(-2px);
+  border-color: #0097A7 !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 151, 167, 0.1), 0 4px 6px -4px rgba(0, 151, 167, 0.1) !important;
 }
 
 .item-image-wrapper {
@@ -563,16 +620,24 @@ export default {
 
 .stock-badge {
   position: absolute;
-  top: 8px;
-  right: 8px;
-  font-size: 0.75rem !important;
+  top: 6px;
+  right: 6px;
+  font-size: 0.7rem !important;
   font-weight: 600;
   backdrop-filter: blur(8px);
-  background: rgba(255,255,255,0.9) !important;
+  background: rgba(255, 255, 255, 0.85) !important;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.stock-badge-inline {
+  font-size: 0.7rem !important;
+  font-weight: 600;
+  height: 18px !important;
+  padding: 0 4px !important;
 }
 
 .item-details {
-  padding: 16px !important;
+  padding: 6px 8px !important;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -580,26 +645,39 @@ export default {
 
 .item-name {
   font-weight: 600;
-  font-size: 0.875rem;
-  color: #212121;
-  margin-bottom: 4px;
+  font-size: 0.75rem;
+  color: #1e293b;
+  margin-bottom: 0px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .item-code {
-  font-size: 0.75rem;
-  color: #757575;
+  font-size: 0.65rem;
+  color: #64748b;
   font-family: monospace;
-  margin-bottom: 12px;
+  margin-bottom: 4px;
+}
+
+.card-attributes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+.attribute-pill {
+  font-weight: 600;
+  font-size: 0.65rem !important;
+  height: 16px !important;
+  padding: 0 4px !important;
 }
 
 .item-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: auto;
+  margin-top: 4px;
 }
 
 .item-price {
@@ -609,14 +687,15 @@ export default {
 }
 
 .currency {
-  font-size: 0.75rem;
-  color: #757575;
+  font-size: 0.65rem;
+  color: #64748b;
+  font-weight: 500;
 }
 
 .price {
-  font-size: 1.125rem;
+  font-size: 0.875rem;
   font-weight: 700;
-  color: #1976d2;
+  color: #0097A7;
 }
 
 /* Empty State */
@@ -625,15 +704,15 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 300px;
+  min-height: 200px;
   text-align: center;
-  padding: 40px;
+  padding: 30px;
 }
 
 .empty-text {
-  font-size: 1rem;
-  color: #757575;
-  margin: 16px 0 24px;
+  font-size: 0.95rem;
+  color: #64748b;
+  margin: 12px 0 20px;
 }
 
 /* Loading State */
@@ -642,60 +721,40 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 400px;
+  min-height: 250px;
 }
 
 .loading-text {
-  margin-top: 16px;
-  color: #757575;
+  margin-top: 12px;
+  color: #64748b;
 }
 
 /* RTL Support */
-[dir="rtl"] .header-content {
-  flex-direction: row-reverse;
-}
-
-[dir="rtl"] .attribute-header {
-  flex-direction: row-reverse;
-}
-
 [dir="rtl"] .stock-badge {
   right: auto;
   left: 8px;
-}
-
-[dir="rtl"] .item-footer {
-  flex-direction: row-reverse;
-}
-
-[dir="rtl"] .item-price {
-  flex-direction: row-reverse;
 }
 
 [dir="rtl"] .price {
   direction: ltr;
 }
 
-[dir="rtl"] .results-info {
-  flex-direction: row-reverse;
-}
-
 /* Scrollbar Styling */
-.variants-container::-webkit-scrollbar {
-  width: 8px;
+.scrollable-content::-webkit-scrollbar {
+  width: 6px;
 }
 
-.variants-container::-webkit-scrollbar-track {
-  background: #f1f1f1;
+.scrollable-content::-webkit-scrollbar-track {
+  background: #f1f5f9;
 }
 
-.variants-container::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 4px;
+.scrollable-content::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
 }
 
-.variants-container::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
+.scrollable-content::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 /* Animations */
@@ -725,27 +784,27 @@ export default {
 /* Responsive Design */
 @media (max-width: 600px) {
   .dialog-header {
-    padding: 16px;
+    padding: 10px 14px !important;
   }
   
   .dialog-title {
-    font-size: 1.1rem;
+    font-size: 1rem;
   }
   
   .attributes-section {
-    padding: 16px;
+    padding: 8px 12px;
   }
   
   .items-section {
-    padding: 16px;
+    padding: 12px;
   }
   
   .item-details {
-    padding: 12px !important;
+    padding: 6px !important;
   }
   
   .price {
-    font-size: 1rem;
+    font-size: 0.9rem;
   }
 }
 </style>

@@ -163,7 +163,7 @@
                         size="x-small"
                         color="error"
                         variant="flat"
-                        class="ml-2 font-weight-bold"
+                        class="ms-2 font-weight-bold"
                       >
                         {{ __("Out of Stock") }}
                       </v-chip>
@@ -172,7 +172,7 @@
                         size="x-small"
                         color="warning"
                         variant="flat"
-                        class="ml-2 font-weight-bold"
+                        class="ms-2 font-weight-bold"
                       >
                         {{ __("Low Stock: {0}", [item.actual_qty]) }}
                       </v-chip>
@@ -181,7 +181,7 @@
                         size="x-small"
                         color="error"
                         variant="outlined"
-                        class="ml-2 font-weight-bold"
+                        class="ms-2 font-weight-bold"
                       >
                         {{ __("Expires soon") }}
                       </v-chip>
@@ -1255,6 +1255,14 @@ export default {
     },
 
     add_item(item) {
+      // Prevent template items from being added to the cart
+      if (item && item.has_variants && (item.has_variants == 1 || item.has_variants === true || String(item.has_variants) === '1' || item.has_variants === 'true')) {
+        if (this.eventBus) {
+          this.eventBus.emit("open_variants_model", { item: item, items: this.allItems || [] });
+        }
+        return;
+      }
+
       // Check if addons need to be selected
       if (item.hspos_add_ons && item.hspos_add_ons.length > 0 && !item.selected_addons) {
         this.selectedItemForAddons = item;
@@ -3035,7 +3043,8 @@ export default {
 .action-group {
   display: flex;
   align-items: center;
-  width: 5%;
+  width: auto;
+  min-width: 32px;
 }
 
 .delete-btn {
@@ -3066,7 +3075,7 @@ export default {
 }
 
 [dir="rtl"] .price-input {
-  direction: rtl;
+  direction: ltr;
   text-align: center;
 }
 
