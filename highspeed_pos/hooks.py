@@ -102,10 +102,14 @@ doc_events = {
         "validate": "highspeed_pos.highspeed_pos.api.invoice.validate",
         "before_submit": "highspeed_pos.highspeed_pos.api.invoice.before_submit",
         "before_cancel": "highspeed_pos.highspeed_pos.api.invoice.before_cancel",
+        "on_update": "highspeed_pos.highspeed_pos.api.hsposapp.on_invoice_update",
     },
     "Customer": {
         "validate": "highspeed_pos.highspeed_pos.api.customer.validate",
         "after_insert": "highspeed_pos.highspeed_pos.api.customer.after_insert",
+    },
+    "POS Table": {
+        "on_update": "highspeed_pos.highspeed_pos.api.hsposapp.on_table_update",
     },
 }
 

@@ -1,9 +1,9 @@
 <template>
   <v-row justify="center">
-    <v-dialog v-model="draftsDialog" max-width="1000px" transition="dialog-transition" scrollable>
+    <v-dialog v-model="draftsDialog" max-width="600px" transition="dialog-transition" scrollable>
       <v-locale-provider :rtl="isRTL">
         <v-card elevation="0" class="dialog-card" :dir="isRTL ? 'rtl' : 'ltr'">
-          <v-card-title class="dialog-header pa-4 bg-gradient-header flex-shrink-0">
+          <v-card-title class="dialog-header pa-3 bg-gradient-header flex-shrink-0">
             <div class="header-content d-flex align-center" :class="{ 'flex-row-reverse': isRTL }">
               <v-icon size="24" color="white" :class="isRTL ? 'ml-3' : 'mr-3'">mdi-file-document-multiple</v-icon>
               <div class="text-start">
@@ -15,64 +15,58 @@
 
           <v-divider></v-divider>
 
-          <v-card-text class="pa-0">
-            <v-container fluid class="pa-2">
+          <v-card-text class="pa-0 bg-slate-50">
+            <v-container fluid class="pa-3">
               <v-row no-gutters>
                 <v-col cols="12">
-                  <v-data-table 
-                    :headers="headers" 
-                    :items="dialog_data" 
-                    item-value="name" 
-                    class="invoice-table" 
-                    show-select
-                    v-model="selected" 
-                    select-strategy="single" 
-                    return-object
-                    hover
-                    :items-per-page-text="__('Items per page:')"
-                  >
-                    <template v-slot:item.customer_name="{ item }">
-                      <div class="customer-cell d-flex align-center py-2">
-                        <v-avatar size="32" color="primary" class="me-3">
-                          <span class="text-caption text-white">
-                            {{ getInitials(item.customer_name) }}
-                          </span>
+                  <div class="drafts-list overflow-y-auto px-1" style="max-height: 420px;">
+                    <div
+                      v-for="item in dialog_data"
+                      :key="item.name"
+                      class="mb-2 rounded-lg bg-white draft-item-card px-4 py-3 cursor-pointer d-flex align-center"
+                      @click="selectDraft(item)"
+                      @dblclick="loadDraft(item)"
+                      :class="{ 'selected-draft-card': selected && selected[0] && selected[0].name === item.name }"
+                      style="transition: all 0.2s ease; border: 1.5px solid #e2e8f0 !important;"
+                    >
+                      <!-- Left/Start side: Icon + Details -->
+                      <div class="d-flex align-center flex-grow-1 min-width-0" style="gap: 12px;">
+                        <!-- Icon -->
+                        <v-avatar size="36" :color="selected && selected[0] && selected[0].name === item.name ? 'success' : 'amber-lighten-4'" class="flex-shrink-0">
+                          <v-icon :color="selected && selected[0] && selected[0].name === item.name ? 'white' : 'amber-darken-3'" size="20">
+                            {{ selected && selected[0] && selected[0].name === item.name ? 'mdi-check' : 'mdi-file-document-outline' }}
+                          </v-icon>
                         </v-avatar>
-                        <div class="text-start">
-                          <div class="customer-name font-weight-medium text-slate-800">{{ item.customer_name }}</div>
-                          <div class="invoice-number text-caption text-slate-500 font-mono">{{ item.name }}</div>
+
+                        <!-- Customer Info & Invoice Number -->
+                        <div class="min-width-0 text-start">
+                          <div class="d-flex align-center flex-wrap" style="gap: 8px;">
+                            <span class="font-weight-bold text-slate-800 text-subtitle-2 text-truncate" style="max-width: 220px; line-height: 1.2;">
+                              {{ item.customer_name || item.customer }}
+                            </span>
+                            <v-chip v-if="item.hspos_table" size="x-small" color="teal-darken-1" class="font-weight-bold text-white px-1.5" variant="flat" style="height: 18px;">
+                              <v-icon start size="10" class="me-0.5">mdi-table-chair</v-icon>
+                              {{ item.hspos_table }}
+                            </v-chip>
+                          </div>
+                          <div class="text-caption text-slate-500 font-mono mt-1" style="font-size: 11px !important; line-height: 1.1;">
+                            {{ item.name }}
+                          </div>
                         </div>
                       </div>
-                    </template>
 
-                    <template v-slot:item.posting_date="{ item }">
-                      <div class="date-cell d-flex align-center text-slate-700">
-                        <v-icon size="16" class="text-slate-400 me-2">mdi-calendar</v-icon>
-                        <span>{{ item.posting_date }}</span>
+                      <!-- Right/End side: Grand Total + Date/Time -->
+                      <div class="text-end flex-shrink-0" style="margin-inline-start: 16px; min-width: 130px;">
+                        <div class="font-weight-black text-amber-darken-4 text-subtitle-2" style="font-size: 1.1rem !important; line-height: 1.2;">
+                          {{ formatCurrency(item.grand_total) }} <span class="text-caption text-slate-500 font-weight-medium" style="font-size: 10px !important;">{{ currencySymbol(item.currency) }}</span>
+                        </div>
+                        <div class="text-caption text-slate-400 mt-1 d-flex align-center justify-end" style="font-size: 10px !important; gap: 4px; line-height: 1.1;">
+                          <v-icon size="11" class="text-slate-300">mdi-clock-outline</v-icon>
+                          <span>{{ item.posting_date }} {{ item.posting_time.split('.')[0] }}</span>
+                        </div>
                       </div>
-                    </template>
-
-                    <template v-slot:item.posting_time="{ item }">
-                      <div class="time-cell d-flex align-center text-slate-700">
-                        <v-icon size="16" class="text-slate-400 me-2">mdi-clock-outline</v-icon>
-                        <span>{{ item.posting_time.split('.')[0] }}</span>
-                      </div>
-                    </template>
-
-                    <template v-slot:item.hspos_table="{ item }">
-                      <div class="table-cell d-flex align-center text-slate-700">
-                        <v-icon size="16" class="text-slate-400 me-2">mdi-table-chair</v-icon>
-                        <span>{{ item.hspos_table || '-' }}</span>
-                      </div>
-                    </template>
-
-                    <template v-slot:item.grand_total="{ item }">
-                      <div class="amount-cell d-flex align-baseline font-weight-bold justify-end">
-                        <span class="currency text-caption text-slate-500 me-1">{{ currencySymbol(item.currency) }}</span>
-                        <span class="amount text-primary">{{ formatCurrency(item.grand_total) }}</span>
-                      </div>
-                    </template>
-                  </v-data-table>
+                    </div>
+                  </div>
                 </v-col>
               </v-row>
             </v-container>
@@ -80,7 +74,7 @@
 
           <v-divider></v-divider>
 
-          <v-card-actions class="dialog-actions pa-4 bg-slate-50">
+          <v-card-actions class="dialog-actions pa-3 bg-slate-100">
             <v-row dense :class="{ 'flex-row-reverse': isRTL }" class="w-100 ma-0">
               <v-spacer></v-spacer>
               <v-btn 
@@ -118,53 +112,23 @@ export default {
   mixins: [format],
   data: () => ({
     draftsDialog: false,
-    singleSelect: true,
     selected: [],
     dialog_data: {},
     isRTL: false,
-    headers: [
-      {
-        title: __('Customer'),
-        value: 'customer_name',
-        align: 'start',
-        sortable: true,
-      },
-      {
-        title: __('Date'),
-        align: 'start',
-        sortable: true,
-        value: 'posting_date',
-      },
-      {
-        title: __('Time'),
-        align: 'start',
-        sortable: true,
-        value: 'posting_time',
-      },
-      {
-        title: __('Invoice'),
-        value: 'name',
-        align: 'start',
-        sortable: true,
-      },
-      {
-        title: __('Table'),
-        value: 'hspos_table',
-        align: 'start',
-        sortable: true,
-      },
-      {
-        title: __('Amount'),
-        value: 'grand_total',
-        align: 'end',
-        sortable: false,
-      },
-    ],
   }),
   watch: {},
   methods: {
     close_dialog() {
       this.draftsDialog = false;
+    },
+
+    selectDraft(item) {
+      this.selected = [item];
+    },
+
+    loadDraft(item) {
+      this.selected = [item];
+      this.submit_dialog();
     },
 
     submit_dialog() {
@@ -174,20 +138,10 @@ export default {
       }
       else {
         this.eventBus.emit("show_message", {
-          title: __('Select an invoice to load'),
+          title: this.__('Select an invoice to load'),
           color: "error",
         });
       }
-    },
-
-    getInitials(name) {
-      if (!name) return '?';
-      return name
-        .split(' ')
-        .map(word => word[0])
-        .join('')
-        .toUpperCase()
-        .substring(0, 2);
     },
 
     __: window.__ || ((str) => str),
@@ -201,6 +155,7 @@ export default {
     this.eventBus.on('open_drafts', (data) => {
       this.draftsDialog = true;
       this.dialog_data = data;
+      this.selected = []; // Reset selection on open
     });
   },
   beforeUnmount() {
@@ -211,7 +166,7 @@ export default {
 
 <style scoped>
 .dialog-card {
-  border-radius: 4px !important;
+  border-radius: 8px !important;
   overflow: hidden;
 }
 
@@ -231,55 +186,26 @@ export default {
   font-weight: 400;
 }
 
-.invoice-table {
-  background: transparent !important;
-  border-radius: 0 !important;
+.draft-item-card {
+  transition: all 0.25s ease;
 }
 
-.invoice-table :deep(.v-table__wrapper) {
-  max-height: 400px;
-  overflow-y: auto;
+.draft-item-card:hover {
+  background-color: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03) !important;
 }
 
-.invoice-table :deep(thead) {
-  background: #f8fafc !important;
+.selected-draft-card {
+  background-color: #f0fdf4 !important;
+  border-color: #22c55e !important;
+  box-shadow: 0 0 0 1px #22c55e !important;
 }
 
-.invoice-table :deep(th) {
-  font-weight: 600 !important;
-  color: #475569 !important;
-  font-size: 0.8rem !important;
-  padding: 12px 16px !important;
-  border-bottom: 1px solid #e2e8f0 !important;
-}
-
-.invoice-table :deep(tbody tr) {
-  transition: all 0.2s ease;
-}
-
-.invoice-table :deep(tbody tr:hover) {
-  background: #f8fafc !important;
-}
-
-.invoice-table :deep(tbody tr.v-data-table__selected) {
-  background: #f0fdf4 !important; /* light green for selected */
-}
-
-.customer-name {
-  font-size: 0.85rem;
-}
-
-.invoice-number {
-  font-size: 0.7rem;
-}
-
-.date-cell,
-.time-cell {
-  font-size: 0.8rem;
-}
-
-.amount {
-  font-size: 0.9rem;
+.selected-draft-card:hover {
+  background-color: #f0fdf4 !important;
+  border-color: #22c55e !important;
 }
 
 .action-btn {
@@ -291,29 +217,5 @@ export default {
 
 .primary-btn {
   box-shadow: none !important;
-}
-
-/* Scrollbar styling */
-.invoice-table :deep(.v-table__wrapper)::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-.invoice-table :deep(.v-table__wrapper)::-webkit-scrollbar-track {
-  background: #f1f5f9;
-}
-
-.invoice-table :deep(.v-table__wrapper)::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 3px;
-}
-
-.invoice-table :deep(.v-table__wrapper)::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
-
-.invoice-table :deep(.v-data-table__td) {
-  padding: 8px 16px !important;
-  border-bottom: 1px solid #f1f5f9 !important;
 }
 </style>

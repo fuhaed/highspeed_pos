@@ -2834,3 +2834,34 @@ def auto_release_expired_tables():
         frappe.db.commit()
         
     return {"released_count": len(expired_tables)}
+
+
+def on_invoice_update(doc, method=None):
+    """
+    Triggers when a Sales Invoice is updated. Broadcasts real-time events to KDS.
+    """
+    frappe.publish_realtime(
+        "hspos_kitchen_update",
+        {
+            "name": doc.name,
+            "status": doc.status,
+            "hspos_kitchen_status": doc.get("hspos_kitchen_status"),
+            "pos_profile": doc.get("pos_profile")
+        },
+        after_commit=True
+    )
+
+
+def on_table_update(doc, method=None):
+    """
+    Triggers when a POS Table is updated. Broadcasts real-time status updates to POS terminals.
+    """
+    frappe.publish_realtime(
+        "hspos_table_update",
+        {
+            "name": doc.name,
+            "status": doc.status,
+            "pos_profile": doc.get("pos_profile")
+        },
+        after_commit=True
+    )

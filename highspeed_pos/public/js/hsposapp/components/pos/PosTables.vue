@@ -73,7 +73,7 @@
             class="pa-2"
           >
             <v-card
-              :class="['table-card', getStatusClass(table), { 'selected': selectedTable === table.name }]"
+              :class="['table-card', getStatusClass(table), { 'selected': selectedTable === table.name, 'has-draft': !!table.draft_name }]"
               variant="flat"
               @click="selectTable(table)"
             >
@@ -98,7 +98,7 @@
                     {{ table.capacity }}
                   </span>
                   <span class="status-text font-weight-medium">
-                    {{ __(table.status) }}
+                    {{ table.draft_name ? (isRTL ? 'مسودة نشطة' : 'Active Draft') : __(table.status) }}
                   </span>
                 </div>
               </div>
@@ -482,5 +482,19 @@ export default {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+.table-card.has-draft {
+  background-color: #fffdf5 !important;
+  border: 1.5px dashed #fb8c00 !important;
+  box-shadow: 0 2px 6px rgba(251, 140, 0, 0.08) !important;
+}
+
+.table-card.has-draft:hover {
+  box-shadow: 0 6px 16px rgba(251, 140, 0, 0.15) !important;
+}
+
+.table-card.has-draft .status-text {
+  color: #fb8c00 !important;
 }
 </style>

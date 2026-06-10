@@ -158,7 +158,7 @@
       </v-row>
     </div>
 
-    <div class="search-field-container">
+    <div class="search-field-container" v-if="pos_profile && !pos_profile.hspos_hide_item_search">
       <v-text-field
         v-model="debounce_search"
         :label="__('Search Items')"
@@ -251,7 +251,7 @@
       </div>
 
       <div v-if="items_view === 'card'" class="grid-view">
-        <v-virtual-scroll :items="virtualRows" height="calc(100vh - 270px)" class="virtual-grid-scroll">
+        <v-virtual-scroll :items="virtualRows" height="100%" class="virtual-grid-scroll">
           <template v-slot:default="{ item: row }">
             <div class="virtual-grid-row">
               <div v-for="item in row" :key="item.item_code" class="virtual-grid-col">
@@ -288,13 +288,13 @@
                       {{ getItemCartQty(item) }}
                     </v-chip>
                   </div>
-                  <v-card-text class="pa-3 d-flex flex-column justify-space-between flex-grow-1">
-                    <div>
-                      <div class="card-name text-center font-weight-bold mb-1" :title="item.item_name">{{ item.item_name }}</div>
-                      <div class="card-price text-center mb-2">{{ currencySymbol(item.currency) }}{{ formatCurrency(item.rate) }}</div>
+                  <v-card-text class="pa-2 d-flex flex-column flex-grow-1" style="height: calc(100% - 85px); justify-content: flex-start;">
+                    <div class="text-center w-100">
+                      <div class="card-name font-weight-bold mb-0.5 text-truncate" :title="item.item_name">{{ item.item_name }}</div>
+                      <div class="card-price mb-1">{{ currencySymbol(item.currency) }}{{ formatCurrency(item.rate) }}</div>
                     </div>
                     
-                    <div class="card-footer-info d-flex justify-space-between align-center">
+                    <div class="card-footer-info d-flex justify-space-between align-center mt-auto w-100">
                       <span class="card-uom">{{ item.stock_uom }}</span>
                       
                       <span class="card-qty" :style="{ color: getStockColor(getItemStock(item)) }">
@@ -667,7 +667,9 @@ export default {
         this.scannerTimeout = null;
       }
       
-      this.$refs.debounce_search.focus();
+      if (this.$refs.debounce_search) {
+        this.$refs.debounce_search.focus();
+      }
     },
 
     nextPage() {
@@ -1727,8 +1729,7 @@ export default {
 
 .grid-view {
   flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
   padding: 8px;
   scrollbar-width: thin;
   scrollbar-color: #ccc #f5f5f5;
@@ -1761,7 +1762,7 @@ export default {
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
   border-radius: 4px !important;
-  min-height: 180px;
+  height: 165px !important;
   background: #ffffff !important;
   border: 1px solid rgba(0, 0, 0, 0.08) !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
@@ -1802,7 +1803,7 @@ export default {
   position: relative;
   overflow: hidden;
   width: 100%;
-  height: 95px;
+  height: 85px;
   flex-shrink: 0;
   border-top-left-radius: 4px !important;
   border-top-right-radius: 4px !important;
@@ -1812,10 +1813,10 @@ export default {
 
 @media (max-width: 900px) {
   .item-card {
-    min-height: 160px;
+    height: 145px !important;
   }
   .card-image {
-    height: 80px;
+    height: 70px;
   }
 }
 

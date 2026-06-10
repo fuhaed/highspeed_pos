@@ -89,6 +89,20 @@ def create_schema():
     else:
         print("INFO: Custom field hspos_enable_dining_tables on POS Profile already exists")
 
+    # Add custom field hspos_hide_item_search to POS Profile if it doesn't exist
+    if not frappe.db.exists("Custom Field", "POS Profile-hspos_hide_item_search"):
+        create_custom_field("POS Profile", dict(
+            fieldname="hspos_hide_item_search",
+            label="Hide Item Search",
+            fieldtype="Check",
+            default="0",
+            insert_after="hspos_enable_dining_tables"
+        ))
+        frappe.db.commit()
+        print("SUCCESS: Added custom field hspos_hide_item_search to POS Profile")
+    else:
+        print("INFO: Custom field hspos_hide_item_search on POS Profile already exists")
+
     # 3. Add custom field hspos_table to Sales Invoice if it doesn't exist
     if not frappe.db.exists("Custom Field", "Sales Invoice-hspos_table"):
         create_custom_field("Sales Invoice", dict(

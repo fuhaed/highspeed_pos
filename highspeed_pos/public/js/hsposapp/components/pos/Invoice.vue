@@ -21,6 +21,19 @@
     </v-dialog>
 
     <v-card class="invoice-card" :class="{ 'return-mode': invoiceType === 'Return' || invoice_doc.is_return }" elevation="2">
+      <!-- Active Draft Alert Banner -->
+      <div v-if="invoice_doc && invoice_doc.docstatus === 0" class="d-flex align-center justify-space-between px-3 py-2 border-b w-100" style="background-color: #fff9db; border-bottom: 1.5px solid #ffe066 !important;">
+        <div class="d-flex align-center">
+          <v-icon size="18" color="amber-darken-3" class="me-2">mdi-file-clock-outline</v-icon>
+          <span class="text-caption font-weight-bold text-amber-darken-4">
+            {{ isRTL ? 'مسودة نشطة:' : 'Active Draft:' }} <span class="font-mono">{{ invoice_doc.name }}</span>
+          </span>
+        </div>
+        <v-chip size="x-small" color="amber-darken-3" class="font-weight-black text-white" variant="flat">
+          {{ isRTL ? 'مسودة معلقة' : 'Pending Draft' }}
+        </v-chip>
+      </div>
+
       <div class="header-section">
         <v-row dense class="pa-2">
           <v-col :cols="pos_profile.hspos_allow_sales_order ? 8 : 12">
