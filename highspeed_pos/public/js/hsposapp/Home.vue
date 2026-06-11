@@ -57,7 +57,7 @@ export default {
 </script>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 /* Prevent browser body and Frappe page container scrolling by aligning heights exactly */
 html, body, #web-page, .page-container, .main-section, .page-content, .page-content-wrapper {
@@ -68,7 +68,7 @@ html, body, #web-page, .page-container, .main-section, .page-content, .page-cont
 
 /* Global Typography */
 * {
-  font-family: 'Cairo', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
 }
 
 /* Enforce Latin digits in inputs, selectors, and textareas */
