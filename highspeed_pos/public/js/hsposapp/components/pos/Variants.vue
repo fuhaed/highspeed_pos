@@ -23,10 +23,10 @@
         <v-card-text class="pa-0 scrollable-content">
           <v-container v-if="parentItem" class="variants-container">
             <!-- Attributes Section -->
-            <div class="attributes-section" v-if="parentItem.attributes && parentItem.attributes.length">
+            <div class="attributes-section" v-if="availableAttributes && availableAttributes.length">
               <v-row class="ma-0 pa-0">
                 <v-col 
-                  v-for="(attr, index) in parentItem.attributes" 
+                  v-for="(attr, index) in availableAttributes" 
                   :key="attr.attribute"
                   cols="6"
                   class="pa-2"
@@ -278,6 +278,42 @@ export default {
       console.log('Found variants:', variants);
       
       return variants;
+    },
+
+    availableAttributes() {
+      if (!this.parentItem || !this.parentItem.attributes) {
+        return [];
+      }
+      
+      // Deep copy the parent attributes list
+      const attributes = JSON.parse(JSON.stringify(this.parentItem.attributes));
+      
+      // Find all attribute values that actually exist among our variants
+      const activeValuesByAttr = {};
+      this.variantsItems.forEach(variant => {
+        if (variant.item_attributes) {
+          variant.item_attributes.forEach(attr => {
+            const attrName = attr.attribute;
+            const attrVal = attr.attribute_value;
+            if (attrName && attrVal) {
+              if (!activeValuesByAttr[attrName]) {
+                activeValuesByAttr[attrName] = new Set();
+              }
+              activeValuesByAttr[attrName].add(attrVal.trim().toLowerCase());
+            }
+          });
+        }
+      });
+      
+      // Filter each attribute's values to only include the active ones
+      return attributes.map(attr => {
+        const activeVals = activeValuesByAttr[attr.attribute] || new Set();
+        attr.values = (attr.values || []).filter(val => {
+          const valName = val.attribute_value;
+          return valName && activeVals.has(valName.trim().toLowerCase());
+        });
+        return attr;
+      }).filter(attr => attr.values.length > 0);
     },
   },
 
