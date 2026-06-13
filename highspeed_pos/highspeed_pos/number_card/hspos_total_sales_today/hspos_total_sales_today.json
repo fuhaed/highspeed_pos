@@ -1,7 +1,7 @@
 {
  "aggregate_function_based_on": "grand_total",
  "color": "#2ecc71",
- "creation": "2026-06-04 22:18:56.803475",
+ "creation": "2026-06-13 23:27:03.792298",
  "currency": "SAR",
  "docstatus": 0,
  "doctype": "Number Card",
@@ -12,7 +12,7 @@
  "is_public": 0,
  "is_standard": 1,
  "label": "HSPOS Total Sales Today",
- "modified": "2026-06-04 22:18:56.803475",
+ "modified": "2026-06-13 23:27:03.792298",
  "modified_by": "Administrator",
  "module": "highspeed_pos",
  "name": "HSPOS Total Sales Today",

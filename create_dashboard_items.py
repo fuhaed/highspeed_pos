@@ -153,7 +153,7 @@ if frappe.db.exists("Workspace", "HIGHSPEED POS"):
         
     # Build Gutenberg content block list
     new_content = [
-        {"id": "hspos_stats_header", "type": "header", "data": {"text": '<span class="h4">الاحصائيات والمؤشرات</span>', "col": 12}},
+        {"id": "hspos_stats_header", "type": "header", "data": {"text": '<span class="h4">Statistics & Indicators</span>', "col": 12}},
         {"id": "hspos_sales_today", "type": "number_card", "data": {"number_card_name": "HSPOS Total Sales Today", "col": 4}},
         {"id": "hspos_invoices_today", "type": "number_card", "data": {"number_card_name": "HSPOS Total Invoices Today", "col": 4}},
         {"id": "hspos_average_ticket", "type": "number_card", "data": {"number_card_name": "HSPOS Average Ticket Today", "col": 4}},
@@ -161,7 +161,7 @@ if frappe.db.exists("Workspace", "HIGHSPEED POS"):
         {"id": "hspos_active_shifts", "type": "number_card", "data": {"number_card_name": "HSPOS Active Shifts", "col": 6}},
         {"id": "hspos_daily_sales", "type": "chart", "data": {"chart_name": "HSPOS Daily Sales Trend", "col": 12}},
         {"id": "spacer_after_chart", "type": "spacer", "data": {"col": 12}},
-        {"id": "cJigdSD9mh", "type": "header", "data": {"text": '<span class="h4">نقاط البيع</span>', "col": 12}},
+        {"id": "cJigdSD9mh", "type": "header", "data": {"text": '<span class="h4">Point of Sales</span>', "col": 12}},
         {"id": "4D2sc3CbN3", "type": "shortcut", "data": {"shortcut_name": "HIGHSPEED POS App", "col": 3}},
         {"id": "nVBkn7nfDw", "type": "spacer", "data": {"col": 12}},
         {"id": "-B_qEZqEA6", "type": "card", "data": {"card_name": "POS", "col": 4}},
