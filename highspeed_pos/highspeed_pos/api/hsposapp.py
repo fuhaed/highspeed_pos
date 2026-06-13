@@ -254,8 +254,11 @@ def get_items(
         if not hspos_show_template_items:
             condition += " AND has_variants = 0"
 
-        if hspos_hide_variants_items:
-            condition += " AND (variant_of IS NULL OR variant_of = '')"
+        # If hspos_hide_variants_items is enabled, we still fetch them here so they are
+        # available for the variants selection popup in the client. The client (frontend)
+        # will handle filtering them out of the main item selector grid.
+        # if hspos_hide_variants_items:
+        #     condition += " AND (variant_of IS NULL OR variant_of = '')"
 
         result = []
 
