@@ -264,9 +264,13 @@ export default {
       
       // If no variants found, try has_variants
       if (variants.length === 0 && this.parentItem.has_variants) {
-        // Maybe variants are in another field
+        // Find by name, excluding the parent template item itself and other template items
         variants = this.items.filter(
-          (item) => item.item_name && item.item_name.includes(this.parentItem.item_name)
+          (item) => 
+            item.item_code !== this.parentItem.item_code && 
+            !item.has_variants && 
+            item.item_name && 
+            item.item_name.includes(this.parentItem.item_name)
         );
       }
       

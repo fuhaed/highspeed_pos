@@ -17,8 +17,8 @@ frappe.PosApp.hsposapp = class {
 
     }
     make_body() {
-        // Force clear PWA caches, service worker, and IndexedDB once for v8 update
-        if (localStorage.getItem('hspos_cache_version') !== 'v8') {
+        // Force clear PWA caches, service worker, and IndexedDB once for v9 update
+        if (localStorage.getItem('hspos_cache_version') !== 'v9') {
             try {
                 indexedDB.deleteDatabase('highspeed_pos_db');
                 if ('serviceWorker' in navigator) {
@@ -35,8 +35,8 @@ frappe.PosApp.hsposapp = class {
                         }
                     });
                 }
-                localStorage.setItem('hspos_cache_version', 'v8');
-                console.log('Cleared IndexedDB, Caches, and Service Worker for v8');
+                localStorage.setItem('hspos_cache_version', 'v9');
+                console.log('Cleared IndexedDB, Caches, and Service Worker for v9');
                 window.location.reload();
                 return;
             } catch (e) {
