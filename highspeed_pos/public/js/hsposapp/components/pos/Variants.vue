@@ -5,7 +5,7 @@
         <v-card-title class="dialog-header">
           <div class="header-content">
             <v-icon size="24" color="white" class="header-icon">mdi-shape-plus</v-icon>
-            <span class="dialog-title">{{ parentItem ? parentItem.item_name : __('Select Item') }}</span>
+            <span class="dialog-title"><bdi>{{ parentItem ? parentItem.item_name : __('Select Item') }}</bdi></span>
           </div>
           <v-spacer></v-spacer>
           <v-btn 
@@ -56,7 +56,7 @@
                       <v-icon size="16" start v-if="filters[attr.attribute] === value.attribute_value">
                         mdi-check
                       </v-icon>
-                      {{ value.attribute_value }}
+                      <bdi>{{ value.attribute_value }}</bdi>
                     </v-chip>
                   </v-chip-group>
                 </v-col>
@@ -118,7 +118,7 @@
                     <v-card-text class="item-details d-flex flex-column justify-space-between fill-height pa-3">
                       <div>
                         <div class="d-flex justify-space-between align-start mb-1">
-                          <div class="item-name font-weight-bold" :title="item.item_name">{{ item.item_name }}</div>
+                          <div class="item-name font-weight-bold" :title="item.item_name"><bdi>{{ item.item_name }}</bdi></div>
                           <!-- Stock badge inline for cards without images -->
                           <v-chip 
                             v-if="!item.image && item.actual_qty !== undefined"
@@ -131,7 +131,7 @@
                             {{ formatStock(item.actual_qty) }}
                           </v-chip>
                         </div>
-                        <div class="item-code text-caption text-grey">{{ item.item_code }}</div>
+                        <div class="item-code text-caption text-grey" dir="ltr">{{ item.item_code }}</div>
                         
                         <!-- Attribute pills -->
                         <div v-if="item.item_attributes && item.item_attributes.length" class="card-attributes mt-1 mb-2">
@@ -143,7 +143,7 @@
                             variant="tonal"
                             class="attribute-pill"
                           >
-                            {{ attr.attribute_value }}
+                            <bdi>{{ attr.attribute_value }}</bdi>
                           </v-chip>
                         </div>
                       </div>
@@ -183,8 +183,8 @@
                   
                   <v-card-text class="item-details d-flex flex-column justify-space-between fill-height pa-3">
                     <div>
-                      <div class="item-name font-weight-bold">{{ parentItem.item_name }}</div>
-                      <div class="item-code text-caption text-grey">{{ parentItem.item_code }}</div>
+                      <div class="item-name font-weight-bold"><bdi>{{ parentItem.item_name }}</bdi></div>
+                      <div class="item-code text-caption text-grey" dir="ltr">{{ parentItem.item_code }}</div>
                     </div>
                     
                     <div class="item-footer d-flex justify-space-between align-center mt-2">
@@ -442,17 +442,19 @@ export default {
     this.detectRTL();
     
     this.eventBus.on('open_variants_model', (data) => {
-      const { item, items } = data || {};
+      const { item, items, pos_profile } = data || {};
       console.log('Opening variants dialog for:', item);
       console.log('Available items:', items);
       console.log('Item has_variants:', item ? item.has_variants : undefined);
       
       this.varaintsDialog = true;
       this.parentItem = item || null;
-      this.items = items || [];
+      this.items = null; // show loading spinner
       this.filters = {};
       
-      this.$nextTick(() => {
+      const fallbackItems = items || [];
+      
+      const setupVariants = () => {
         // If parent item has attributes, use them
         if (this.parentItem && this.parentItem.attributes && this.parentItem.attributes.length > 0) {
           console.log('Parent has attributes:', this.parentItem.attributes);
@@ -467,15 +469,45 @@ export default {
             console.warn('No variants found. Checking data structure...');
             
             // Try finding variants another way
-            if (item && item.variants && Array.isArray(item.variants)) {
-              this.filterdItems = item.variants;
+            if (this.parentItem && this.parentItem.variants && Array.isArray(this.parentItem.variants)) {
+              this.filterdItems = this.parentItem.variants;
             }
           }
         }
         
         console.log('Variants items:', this.variantsItems);
         console.log('Filtered items:', this.filterdItems);
-      });
+        this.updateFiltredItems();
+      };
+      
+      if (item && item.item_code) {
+        frappe.call({
+          method: "highspeed_pos.highspeed_pos.api.hsposapp.get_item_variants",
+          args: {
+            parent_item_code: item.item_code,
+            pos_profile: pos_profile || null,
+          },
+          callback: (r) => {
+            if (r.message) {
+              this.items = r.message.variants || [];
+              if (r.message.attributes && r.message.attributes.length > 0) {
+                this.parentItem.attributes = r.message.attributes;
+              }
+            } else {
+              this.items = fallbackItems;
+            }
+            this.$nextTick(setupVariants);
+          },
+          error: (err) => {
+            console.error("Failed to load variants from server, using fallback items", err);
+            this.items = fallbackItems;
+            this.$nextTick(setupVariants);
+          }
+        });
+      } else {
+        this.items = fallbackItems;
+        this.$nextTick(setupVariants);
+      }
     });
   },
 
@@ -698,6 +730,9 @@ export default {
   color: #64748b;
   font-family: monospace;
   margin-bottom: 4px;
+  direction: ltr !important;
+  unicode-bidi: isolate;
+  text-align: inherit;
 }
 
 .card-attributes {

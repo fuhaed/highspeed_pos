@@ -734,7 +734,7 @@ export default {
         }
         
         try {
-          this.eventBus.emit("open_variants_model", { item: item, items: this.items });
+          this.eventBus.emit("open_variants_model", { item: item, items: this.items, pos_profile: this.pos_profile });
           this.clearSearch();
         } catch (error) {
           console.error('Error opening variants dialog:', error);

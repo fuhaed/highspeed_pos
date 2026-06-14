@@ -1258,7 +1258,7 @@ export default {
       // Prevent template items from being added to the cart
       if (item && item.has_variants && (item.has_variants == 1 || item.has_variants === true || String(item.has_variants) === '1' || item.has_variants === 'true')) {
         if (this.eventBus) {
-          this.eventBus.emit("open_variants_model", { item: item, items: this.allItems || [] });
+          this.eventBus.emit("open_variants_model", { item: item, items: this.allItems || [], pos_profile: this.pos_profile });
         }
         return;
       }

@@ -2945,3 +2945,114 @@ def on_table_update(doc, method=None):
         },
         after_commit=True
     )
+
+
+@frappe.whitelist()
+def get_item_variants(parent_item_code, pos_profile, price_list=None, customer=None):
+    """
+    Fetch all active variants for a parent template item, with prices and stock information
+    """
+    if isinstance(pos_profile, str):
+        pos_profile = json.loads(pos_profile)
+        
+    today = nowdate()
+    warehouse = pos_profile.get("warehouse")
+    
+    if not price_list:
+        price_list = pos_profile.get("selling_price_list")
+        
+    # Find all active variants for this parent
+    items_data = frappe.db.get_all(
+        "Item",
+        filters={
+            "disabled": 0,
+            "is_sales_item": 1,
+            "is_fixed_asset": 0,
+            "variant_of": parent_item_code
+        },
+        fields=[
+            "name as item_code",
+            "item_name",
+            "description",
+            "stock_uom",
+            "image",
+            "is_stock_item",
+            "has_variants",
+            "variant_of",
+            "item_group",
+            "idx",
+            "has_batch_no",
+            "has_serial_no",
+            "max_discount",
+            "brand"
+        ],
+        order_by="item_name asc"
+    )
+    
+    if not items_data:
+        return {"variants": [], "attributes": get_item_attributes(parent_item_code)}
+        
+    items = [d.item_code for d in items_data]
+    
+    # Get prices
+    item_prices_data = frappe.get_all(
+        "Item Price",
+        fields=["item_code", "price_list_rate", "currency", "uom"],
+        filters={
+            "price_list": price_list,
+            "item_code": ["in", items],
+            "currency": pos_profile.get("currency"),
+            "selling": 1,
+            "valid_from": ["<=", today],
+            "customer": ["in", ["", None, customer]],
+        },
+        or_filters=[
+            ["valid_upto", ">=", today],
+            ["valid_upto", "in", ["", None]],
+        ],
+        order_by="valid_from ASC, valid_upto DESC",
+    )
+    
+    item_prices = {}
+    for d in item_prices_data:
+        item_prices.setdefault(d.item_code, {})
+        item_prices[d.item_code][d.get("uom") or "None"] = d
+        
+    result = []
+    for item in items_data:
+        item_code = item.item_code
+        item_price = {}
+        if item_prices.get(item_code):
+            item_price = (
+                item_prices.get(item_code).get(item.stock_uom)
+                or item_prices.get(item_code).get("None")
+                or {}
+            )
+            
+        item_barcode = frappe.get_all(
+            "Item Barcode",
+            filters={"parent": item_code},
+            fields=["barcode", "hspos_uom"],
+        )
+        
+        item_stock_qty = get_stock_availability(item_code, warehouse)
+        
+        # Get attributes for this variant
+        item_attributes = frappe.get_all(
+            "Item Variant Attribute",
+            fields=["attribute", "attribute_value"],
+            filters={"parent": item_code, "parentfield": "attributes"},
+        )
+        
+        row = {}
+        row.update(item)
+        row.update({
+            "rate": item_price.get("price_list_rate") or 0,
+            "currency": item_price.get("currency") or pos_profile.get("currency") or "SAR",
+            "actual_qty": item_stock_qty,
+            "item_barcode": item_barcode,
+            "item_attributes": item_attributes
+        })
+        result.append(row)
+        
+    return {"variants": result, "attributes": get_item_attributes(parent_item_code)}
