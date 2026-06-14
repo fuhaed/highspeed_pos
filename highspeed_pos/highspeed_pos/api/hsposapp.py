@@ -217,9 +217,15 @@ def get_items(
         use_limit_search = pos_profile.get("pose_use_limit_search")
         search_serial_no = pos_profile.get("hspos_search_serial_no")
         search_batch_no = pos_profile.get("hspos_search_batch_no")
-        hspos_show_template_items = pos_profile.get("hspos_show_template_items")
-        hspos_hide_variants_items = pos_profile.get("hspos_hide_variants_items")
-        hspos_display_items_in_stock = pos_profile.get("hspos_display_items_in_stock")
+        db_profile = frappe.db.get_value(
+            "POS Profile",
+            pos_profile.get("name"),
+            ["hspos_show_template_items", "hspos_hide_variants_items", "hspos_display_items_in_stock"],
+            as_dict=True
+        ) or {}
+        hspos_show_template_items = db_profile.get("hspos_show_template_items") or pos_profile.get("hspos_show_template_items")
+        hspos_hide_variants_items = db_profile.get("hspos_hide_variants_items") or pos_profile.get("hspos_hide_variants_items")
+        hspos_display_items_in_stock = db_profile.get("hspos_display_items_in_stock") or pos_profile.get("hspos_display_items_in_stock")
         search_limit = 0
 
         if not price_list:
@@ -397,10 +403,10 @@ def get_items(
                             item_code, pos_profile.get("warehouse")
                         )
                 attributes = ""
-                if pos_profile.get("hspos_show_template_items") and item.has_variants:
+                if hspos_show_template_items and item.has_variants:
                     attributes = get_item_attributes(item.item_code)
                 item_attributes = ""
-                if pos_profile.get("hspos_show_template_items") and item.variant_of:
+                if hspos_show_template_items and item.variant_of:
                     item_attributes = frappe.get_all(
                         "Item Variant Attribute",
                         fields=["attribute", "attribute_value"],
