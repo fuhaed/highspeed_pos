@@ -384,9 +384,18 @@ def get_items(
                     )
                 item_stock_qty = 0
                 if pos_profile.get("hspos_display_items_in_stock") or use_limit_search:
-                    item_stock_qty = get_stock_availability(
-                        item_code, pos_profile.get("warehouse")
-                    )
+                    if item.has_variants:
+                        # Sum stock of all variants in this warehouse
+                        item_stock_qty = frappe.db.sql("""
+                            SELECT SUM(bin.actual_qty)
+                            FROM `tabBin` bin
+                            INNER JOIN `tabItem` it ON bin.item_code = it.name
+                            WHERE it.variant_of = %s AND bin.warehouse = %s
+                        """, (item_code, warehouse))[0][0] or 0.0
+                    else:
+                        item_stock_qty = get_stock_availability(
+                            item_code, pos_profile.get("warehouse")
+                        )
                 attributes = ""
                 if pos_profile.get("hspos_show_template_items") and item.has_variants:
                     attributes = get_item_attributes(item.item_code)
@@ -423,22 +432,28 @@ def get_items(
         # ========== BULK STOCK FETCH ==========
         # Fetch stock for all items in one query
         if warehouse and result:
-            item_codes = [item['item_code'] for item in result]
-            stock_data = frappe.db.sql("""
-                SELECT item_code, actual_qty, projected_qty, reserved_qty
-                FROM `tabBin`
-                WHERE item_code IN %(codes)s AND warehouse = %(warehouse)s
-            """, {'codes': item_codes, 'warehouse': warehouse}, as_dict=True)
-            
-            # Create stock map
-            stock_map = {s['item_code']: s for s in stock_data}
+            item_codes = [item['item_code'] for item in result if not item.get('has_variants')]
+            stock_map = {}
+            if item_codes:
+                stock_data = frappe.db.sql("""
+                    SELECT item_code, actual_qty, projected_qty, reserved_qty
+                    FROM `tabBin`
+                    WHERE item_code IN %(codes)s AND warehouse = %(warehouse)s
+                """, {'codes': item_codes, 'warehouse': warehouse}, as_dict=True)
+                
+                # Create stock map
+                stock_map = {s['item_code']: s for s in stock_data}
             
             # Update items with stock data
             for item in result:
-                stock = stock_map.get(item['item_code'], {})
-                item['actual_qty'] = stock.get('actual_qty', 0.0)
-                item['projected_qty'] = stock.get('projected_qty', 0.0)
-                item['reserved_qty'] = stock.get('reserved_qty', 0.0)
+                if item.get("has_variants"):
+                    # Preservation: template item stock is calculated as sum of variants above
+                    pass
+                else:
+                    stock = stock_map.get(item['item_code'], {})
+                    item['actual_qty'] = stock.get('actual_qty', 0.0)
+                    item['projected_qty'] = stock.get('projected_qty', 0.0)
+                    item['reserved_qty'] = stock.get('reserved_qty', 0.0)
         
         return result
 
